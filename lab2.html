@@ -4,42 +4,42 @@
     <meta charset="UTF-8">
     <title>Лабораторна 2 — Сорокіна</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.2.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
   </head>
   <body>
     <a-scene>
       <a-assets>
         <img id="myTexture" src="images/texture.jpg">
-        
         <a-asset-item id="myModel" src="models/Shiny%20Lahdi.stl"></a-asset-item>
       </a-assets>
 
-      <a-text 
-        value="Студентка: Сорокіна Єлизавета" 
-        font="fonts/ukr-msdf.json" 
-        negate="false" 
-        color="#000" 
-        width="9" 
-        position="-2.5 3.5 -5">
-      </a-text>
+      <a-entity
+        position="-2 3.5 -4"
+        text="value: Студентка: Сорокіна Єлизавета; font: https://raw.githubusercontent.com/mygeodata/font-generator/master/fonts/SourceSansPro-Regular.json; color: black; width: 8">
+      </a-entity>
 
-      <a-sphere position="-2 1.5 -6" radius="1.3" src="#myTexture"
-                animation="property: material.color; from: #ffffff; to: #00ff00; dur: 3000; loop: true">
+      <a-sphere position="-2 1.5 -5" radius="1.2" src="#myTexture"
+                animation__color="property: material.color; from: #ffffff; to: #00ff00; dur: 3000; loop: true"
+                animation__rotate="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
       </a-sphere>
 
-      <a-cylinder position="2 1 -6" radius="0.6" height="1.8" color="#00BFFF"
+      <a-cylinder position="2 1 -5" radius="0.5" height="1.5" color="#00BFFF"
                   animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
       </a-cylinder>
 
-      <a-entity loader-stl="src: #myModel" 
-                position="0 0.5 -8" 
-                scale="0.04 0.04 0.04" 
+      <a-entity mesh-loader="src: #myModel" 
+                stl-model="src: #myModel"
+                position="0 0.2 -6" 
+                scale="0.3 0.3 0.3" 
                 rotation="-90 0 0"
-                material="color: #FFD700">
+                material="color: #FFD700; metalness: 0.8; roughness: 0.2">
       </a-entity>
 
       <a-sky color="#87CEEB"></a-sky>
-      <a-plane position="0 0 -5" rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+      
+      <a-light type="directional" position="1 1 1" intensity="0.8"></a-light>
+      <a-light type="ambient" color="#fff"></a-light>
     </a-scene>
   </body>
 </html>
