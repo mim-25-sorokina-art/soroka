@@ -9,25 +9,29 @@
   <body>
     <a-scene>
       <a-assets>
-        <img id="myTexture" src="images/texture.jpg.jpeg">
+        <img id="woodTexture" src="images/texture.jpg.jpeg">
         <a-asset-item id="myModel" src="models/Shiny%20Lahdi.stl"></a-asset-item>
       </a-assets>
 
       <a-entity
         position="-2 3.5 -4"
-        text="value: Студентка: Сорокіна Єлизавета; 
-              font: fonts/ukr-msdf.json; 
-              negate: false; 
-              color: #000000; 
-              width: 9">
+        text="value: Студентка: Сорокіна Єлизавета; font: fonts/ukr-msdf.json; negate: false; color: #000; width: 9">
       </a-entity>
 
-      <a-sphere position="-2 1.5 -5" radius="1.2" src="#myTexture"
-                animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
+      <a-sphere 
+        position="-2 1.5 -5" 
+        radius="1.2" 
+        src="#woodTexture"
+        material="color: #7BC8A4"
+        animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
       </a-sphere>
 
-      <a-cylinder position="2 1 -5" radius="0.5" height="1.5" color="#00BFFF"
-                  animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
+      <a-cylinder 
+        position="2 1 -5" 
+        radius="0.5" 
+        height="1.5" 
+        color="#00BFFF"
+        animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
       </a-cylinder>
 
       <a-entity 
