@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Лабораторна 2 — Сорокіна</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
@@ -13,16 +13,20 @@
         <a-asset-item id="myModel" src="models/Shiny%20Lahdi.stl"></a-asset-item>
       </a-assets>
 
-      <a-entity
-        position="-2 3.5 -4"
-        text="value: Студентка: Сорокіна Єлизавета; font: fonts/ukr-msdf.json; negate: false; color: #000; width: 9">
-      </a-entity>
+      <a-text 
+        value="Студентка: Сорокіна Єлизавета" 
+        font="fonts/ukr-msdf.json" 
+        negate="false" 
+        color="#000" 
+        width="9" 
+        position="-2 3.5 -4">
+      </a-text>
 
       <a-sphere 
         position="-2 1.5 -5" 
         radius="1.2" 
         src="#woodTexture"
-        material="color: #7BC8A4"
+        color="#7BC8A4" 
         animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
       </a-sphere>
 
@@ -35,15 +39,17 @@
       </a-cylinder>
 
       <a-entity 
-        loader-stl="src: #myModel" 
+        stl-model="src: #myModel" 
         position="0 0.5 -7" 
         scale="0.1 0.1 0.1" 
         rotation="-90 0 0"
-        material="color: #FFD700; metalness: 0.8">
+        material="color: #FFD700">
       </a-entity>
 
       <a-sky color="#87CEEB"></a-sky>
       <a-plane position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+      
+      <a-light type="ambient" color="#fff"></a-light>
     </a-scene>
   </body>
 </html>
