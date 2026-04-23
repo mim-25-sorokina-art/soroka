@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Лабораторна 2 - Сорокіна Єлизавета</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <a-asset-item id="myModel" src="https://cdn.aframe.io/test-models/models/glTF-2.0/virtualcity/VC.gltf"></a-asset-item>
+        <img id="myTexture" src="https://vignette.wikia.nocookie.net/starwars/images/d/d6/DeathStar-Explosion.jpg/revision/latest?cb=20060205041926">
+      </a-assets>
+
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-text 
+        value="Виконавець: Сорокіна Єлизавета" 
+        font="fonts/yahei-msdf.json" 
+        negate="false" 
+        color="black" 
+        width="8" 
+        position="-2 3 -4">
+      </a-text>
+
+      <a-sphere 
+        position="0 1.25 -5" 
+        radius="1.25" 
+        src="#myTexture"
+        animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
+      </a-sphere>
+
+      <a-entity 
+        gltf-model="#myModel" 
+        position="2 0 -5" 
+        scale="0.01 0.01 0.01">
+      </a-entity>
+
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
+    </a-scene>
+  </body>
+</html>
