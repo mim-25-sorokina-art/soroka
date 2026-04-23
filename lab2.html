@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <title>Лабораторна 2 — Сорокіна</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
@@ -12,10 +13,14 @@
         <a-asset-item id="myModel" src="models/Shiny%20Lahdi.stl"></a-asset-item>
       </a-assets>
 
-      <a-entity
-        position="-1.5 3 -3"
-        text="value: Студентка: Сорокіна Єлизавета; font: fonts/ukr-msdf.json; negate: false; color: black; width: 8">
-      </a-entity>
+      <a-text 
+        value="Sorokina Yelyzaveta" 
+        font="fonts/ukr-msdf.json" 
+        negate="false" 
+        color="black" 
+        width="10" 
+        position="-1.5 3 -3">
+      </a-text>
 
       <a-sphere position="-2 1.25 -5" radius="1.25" src="#myTexture"
                 animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
@@ -37,4 +42,3 @@
     </a-scene>
   </body>
 </html>
-
