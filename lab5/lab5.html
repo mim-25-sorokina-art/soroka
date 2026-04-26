@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Сонячна система - Лабораторна 5</title>
+    <title>AR Solar System - Lab 5 Final</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <script>
-      // ФІЗИКА РУХУ
       const G = 6.674e-11; 
       const SUN_MASS = 1.989e30;
 
@@ -19,12 +18,12 @@
           v_init: {type: 'number'} 
         },
         init: function() {
-          // Масштабуємо: 1.5 млн км = 1 одиниця в AR
+          // Масштаб для AR: 1.5 млн км = 1 одиниця
           this.pos = [this.data.dist * 1000, 0, 0]; 
           this.v = [0, 0, this.data.v_init];
         },
         tick: function(time, timeDelta) {
-          const dt = 86400 * 3; // 1 кадр = 3 дні (щоб рух був помітним)
+          const dt = 86400 * 3; // 1 кадр = 3 дні
           
           let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
           let r = Math.sqrt(r2);
@@ -66,16 +65,16 @@
           
           <a-sphere radius="0.12" src="#sun-tex" material="shader: flat;"></a-sphere>
 
-          <a-sphere radius="0.02" src="#mercury-tex" 
+          <a-sphere radius="0.025" src="#mercury-tex" material="shader: flat;"
                     planet="dist: 57910000; v_init: 47400"></a-sphere>
           
-          <a-sphere radius="0.035" src="#venus-tex" 
+          <a-sphere radius="0.04" src="#venus-tex" material="shader: flat;"
                     planet="dist: 108200000; v_init: 35020"></a-sphere>
           
-          <a-sphere radius="0.045" src="#earth-tex" 
+          <a-sphere radius="0.05" src="#earth-tex" material="shader: flat;"
                     planet="dist: 149600000; v_init: 29780"></a-sphere>
           
-          <a-sphere radius="0.035" src="#mars-tex" 
+          <a-sphere radius="0.035" src="#mars-tex" material="shader: flat;"
                     planet="dist: 227900000; v_init: 24100"></a-sphere>
 
       </a-entity>
