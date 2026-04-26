@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <script>
-      // Фізика гравітації Ньютона
       const G = 6.674e-11; 
       const SUN_MASS = 1.989e30;
 
@@ -23,10 +22,12 @@
           this.v = [0, 0, this.data.v_init];
         },
         tick: function(time, timeDelta) {
-          const dt = 86400 * 2; // Прискорення часу (1 кадр = 2 дні)
+          const dt = 86400 * 3; // Швидкість: 3 дні за кадр
           
           let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
           let r = Math.sqrt(r2);
+          if (r < 1e6) return;
+
           let accel = (G * SUN_MASS) / r2;
           
           for(let i=0; i<3; i++) {
@@ -35,7 +36,7 @@
             this.pos[i] += this.v[i] * dt;
           }
 
-          let visualScale = 1.5e9; 
+          let visualScale = 1.3e9; 
           this.el.setAttribute('position', {
             x: this.pos[0] / visualScale,
             y: this.pos[1] / visualScale,
@@ -49,39 +50,23 @@
     <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false">
+             vr-mode-ui="enabled: false">
       
       <a-assets>
-          <img id="sun-tex" src="images/sun.jpg">
-          <img id="mercury-tex" src="images/mercury.jpg">
-          <img id="venus-tex" src="images/venus.jpg">
-          <img id="earth-tex" src="images/earth.jpg">
-          <img id="mars-tex" src="images/mars.jpg">
+          <img id="sun-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/sun.jpg">
+          <img id="mercury-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/mercury.jpg">
+          <img id="earth-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/earth.jpg">
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+      <a-entity light="type: ambient; intensity: 1.8;"></a-entity>
+
       <a-entity mindar-image-target="targetIndex: 0">
-          
-          <a-sphere radius="0.1" src="#sun-tex" material="shader: flat"></a-sphere>
+          <a-sphere radius="0.15" src="#sun-tex" material="shader: flat;"></a-sphere>
 
-          <a-sphere radius="0.02" src="#mercury-tex" 
-                    planet="dist: 57910000; v_init: 47400">
-          </a-sphere>
-
-          <a-sphere radius="0.03" src="#venus-tex" 
-                    planet="dist: 108200000; v_init: 35020">
-          </a-sphere>
-
-          <a-sphere radius="0.04" src="#earth-tex" 
-                    planet="dist: 149600000; v_init: 29780">
-          </a-sphere>
-
-          <a-sphere radius="0.03" src="#mars-tex" 
-                    planet="dist: 227900000; v_init: 24100">
-          </a-sphere>
-
+          <a-sphere radius="0.03" src="#mercury-tex" color="#8c8c8c" planet="dist: 57910000; v_init: 47400"></a-sphere>
+          <a-sphere radius="0.05" src="#earth-tex" color="#2b82c9" planet="dist: 149600000; v_init: 29780"></a-sphere>
       </a-entity>
     </a-scene>
 </body>
