@@ -3,42 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Сонячна система AR - Лабораторна 5</title>
+    <title>AR Solar System - Lab 5</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <script>
-      // Константи для фізичного моделювання (Закон Ньютона)
+      // Фізика гравітації Ньютона
       const G = 6.674e-11; 
       const SUN_MASS = 1.989e30;
 
       AFRAME.registerComponent('planet', {
         schema: {
-          dist: {type: 'number'}, // Відстань від Сонця в км
-          v_init: {type: 'number'} // Початкова швидкість в м/с
+          dist: {type: 'number'}, 
+          v_init: {type: 'number'} 
         },
         init: function() {
-          // Масштабування позиції для віртуального простору
-          this.pos = [this.data.dist * 1000, 0, 0]; // переводимо в метри
-          this.v = [0, 0, this.data.v_init]; // вектор швидкості
+          this.pos = [this.data.dist * 1000, 0, 0]; 
+          this.v = [0, 0, this.data.v_init];
         },
         tick: function(time, timeDelta) {
-          const dt = 86400 * 2; // Один кадр симуляції = 2 земні дні
+          const dt = 86400 * 2; // Прискорення часу (1 кадр = 2 дні)
           
-          // Розрахунок гравітації Сонця
           let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
           let r = Math.sqrt(r2);
           let accel = (G * SUN_MASS) / r2;
           
-          // Оновлення швидкості та позиції (метод Ейлера)
           for(let i=0; i<3; i++) {
             let a = -accel * (this.pos[i] / r);
             this.v[i] += a * dt;
             this.pos[i] += this.v[i] * dt;
           }
 
-          // Візуальне відображення (масштаб 1.5 млн км = 1 одиниця A-Frame)
           let visualScale = 1.5e9; 
           this.el.setAttribute('position', {
             x: this.pos[0] / visualScale,
@@ -50,7 +46,7 @@
     </script>
 </head>
 <body>
-    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: yes;" 
+    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: no;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
@@ -68,13 +64,13 @@
 
       <a-entity mindar-image-target="targetIndex: 0">
           
-          <a-sphere radius="0.12" src="#sun-tex"></a-sphere>
+          <a-sphere radius="0.1" src="#sun-tex" material="shader: flat"></a-sphere>
 
           <a-sphere radius="0.02" src="#mercury-tex" 
                     planet="dist: 57910000; v_init: 47400">
           </a-sphere>
 
-          <a-sphere radius="0.035" src="#venus-tex" 
+          <a-sphere radius="0.03" src="#venus-tex" 
                     planet="dist: 108200000; v_init: 35020">
           </a-sphere>
 
