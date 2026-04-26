@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lab 6 - Geometry</title>
+    <title>Лабораторна №6 - Чотирикутник AR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
     <script>
-      AFRAME.registerComponent('network', {
+      AFRAME.registerComponent('geometry-calculator', {
         init: function() {
           this.markers = {
             'A': document.querySelector('#mA'), 'B': document.querySelector('#mB'),
@@ -15,8 +15,9 @@
           };
           this.visible = { 'A': false, 'B': false, 'C': false, 'D': false };
           this.lines = {};
-          this.txt = document.querySelector('#stats');
+          this.info = document.querySelector('#info-text');
 
+          // Створюємо 4 лінії для периметра чотирикутника
           const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
           pairs.forEach(p => {
             const l = document.createElement('a-cylinder');
@@ -32,37 +33,57 @@
             this.markers[id].addEventListener("targetLost", () => { this.visible[id] = false; });
           });
         },
+
+        calcDist: function(p1, p2) { return p1.distanceTo(p2); },
+        
+        calcArea: function(p1, p2, p3) {
+          const a = p1.distanceTo(p2), b = p2.distanceTo(p3), c = p3.distanceTo(p1);
+          const s = (a + b + c) / 2;
+          return Math.sqrt(s * (s - a) * (s - b) * (s - c)) || 0;
+        },
+
         tick: function() {
-          let p = 0;
+          let perimeter = 0;
+          const pos = {};
+          
+          // Оновлення ліній та збір позицій
           const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
           pairs.forEach(pair => {
-            const l = this.lines[pair.join('')];
-            if (this.visible[pair[0]] && this.visible[pair[1]]) {
-              const p1 = new THREE.Vector3(), p2 = new THREE.Vector3();
-              this.markers[pair[0]].object3D.getWorldPosition(p1);
-              this.markers[pair[1]].object3D.getWorldPosition(p2);
-              const d = p1.distanceTo(p2);
+            const id1 = pair[0], id2 = pair[1];
+            if (this.visible[id1] && this.visible[id2]) {
+              const v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
+              this.markers[id1].object3D.getWorldPosition(v1);
+              this.markers[id2].object3D.getWorldPosition(v2);
+              pos[id1] = v1; pos[id2] = v2;
+
+              const l = this.lines[id1+id2];
+              const d = v1.distanceTo(v2);
               l.setAttribute('height', d);
-              l.setAttribute('position', {x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2, z:(p1.z+p2.z)/2});
-              l.object3D.lookAt(p2); l.object3D.rotateX(Math.PI/2);
-              l.setAttribute('visible', true); p += d;
-            } else { l.setAttribute('visible', false); }
+              l.setAttribute('position', {x:(v1.x+v2.x)/2, y:(v1.y+v2.y)/2, z:(v1.z+v2.z)/2});
+              l.object3D.lookAt(v2); l.object3D.rotateX(Math.PI/2);
+              l.setAttribute('visible', true);
+              perimeter += d;
+            } else { this.lines[id1+id2].setAttribute('visible', false); }
           });
-          if(this.visible['A'] && this.visible['B'] && this.visible['C']) {
-            this.txt.setAttribute('value', 'Perimeter: ' + p.toFixed(2) + 'm');
+
+          // Розрахунок площ трикутників, якщо видно всі 4 маркери
+          if (this.visible.A && this.visible.B && this.visible.C && this.visible.D) {
+            const sABC = this.calcArea(pos.A, pos.B, pos.C);
+            const sADC = this.calcArea(pos.A, pos.D, pos.C);
+            const sABD = this.calcArea(pos.A, pos.B, pos.D);
+            const sBCD = this.calcArea(pos.B, pos.C, pos.D);
+            
+            this.info.setAttribute('value', 
+              `Perimeter: ${perimeter.toFixed(2)}m\nArea ABC: ${sABC.toFixed(3)}\nArea ADC: ${sADC.toFixed(3)}\nTotal Area: ${(sABC+sADC).toFixed(3)}`);
+          } else {
+            this.info.setAttribute('value', 'Scan all 4 markers (A, B, C, D)');
           }
         }
       });
     </script>
 </head>
 <body style="margin: 0; overflow: hidden;">
-   <a-scene mindar-image="imageTargetSrc: ./targets6.mind; maxTrack: 4; uiDebug: yes;" ...>
+    <a-scene mindar-image="imageTargetSrc: ./targets6.mind; maxTrack: 4; filterMinCF: 0.0001;" vr-mode-ui="enabled: false" geometry-calculator>
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-        <a-entity id="mA" mindar-image-target="targetIndex: 0"><a-sphere radius="0.05" color="red"></a-sphere></a-entity>
-        <a-entity id="mB" mindar-image-target="targetIndex: 1"><a-sphere radius="0.05" color="blue"></a-sphere></a-entity>
-        <a-entity id="mC" mindar-image-target="targetIndex: 2"><a-sphere radius="0.05" color="green"></a-sphere></a-entity>
-        <a-entity id="mD" mindar-image-target="targetIndex: 3"><a-sphere radius="0.05" color="orange"></a-sphere></a-entity>
-        <a-text id="stats" value="Scan A, B, C, D" position="-0.5 -1 -2" color="white" width="3"></a-text>
-    </a-scene>
-</body>
-</html>
+
+        <a-entity id="mA" mindar-image-target="targetIndex: 0"><a-sphere radius
