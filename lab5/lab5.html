@@ -3,46 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Solar System - Lab 5 Final</title>
+    <title>AR Solar System - Final</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <script>
-      const G = 6.674e-11; 
-      const SUN_MASS = 1.989e30;
-
       AFRAME.registerComponent('planet', {
         schema: {
           dist: {type: 'number'}, 
-          v_init: {type: 'number'} 
+          speed: {type: 'number'} 
         },
         init: function() {
-          // Масштаб для AR: 1.5 млн км = 1 одиниця
-          this.pos = [this.data.dist * 1000, 0, 0]; 
-          this.v = [0, 0, this.data.v_init];
+          this.angle = Math.random() * Math.PI * 2;
         },
         tick: function(time, timeDelta) {
-          const dt = 86400 * 3; // 1 кадр = 3 дні
-          
-          let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
-          let r = Math.sqrt(r2);
-          if (r < 1e6) return;
-
-          let accel = (G * SUN_MASS) / r2;
-          
-          for(let i=0; i<3; i++) {
-            let a = -accel * (this.pos[i] / r);
-            this.v[i] += a * dt;
-            this.pos[i] += this.v[i] * dt;
-          }
-
-          let visualScale = 1.5e9; 
-          this.el.setAttribute('position', {
-            x: this.pos[0] / visualScale,
-            y: this.pos[1] / visualScale,
-            z: this.pos[2] / visualScale
-          });
+          // Проста анімація по колу для стабільності
+          this.angle += (this.data.speed / 1000) * (timeDelta / 16);
+          const x = Math.cos(this.angle) * this.data.dist;
+          const z = Math.sin(this.angle) * this.data.dist;
+          this.el.setAttribute('position', {x: x, y: 0, z: z});
         }
       });
     </script>
@@ -63,19 +43,19 @@
 
       <a-entity mindar-image-target="targetIndex: 0">
           
-          <a-sphere radius="0.12" src="#sun-tex" material="shader: flat;"></a-sphere>
+          <a-sphere radius="0.1" src="#sun-tex" material="shader: flat; color: #FFD700;"></a-sphere>
 
-          <a-sphere radius="0.025" src="#mercury-tex" material="shader: flat;"
-                    planet="dist: 57910000; v_init: 47400"></a-sphere>
+          <a-sphere radius="0.02" src="#mercury-tex" color="#9c9c9c"
+                    planet="dist: 0.2; speed: 2"></a-sphere>
           
-          <a-sphere radius="0.04" src="#venus-tex" material="shader: flat;"
-                    planet="dist: 108200000; v_init: 35020"></a-sphere>
+          <a-sphere radius="0.03" src="#venus-tex" color="#ffe896"
+                    planet="dist: 0.35; speed: 1.5"></a-sphere>
           
-          <a-sphere radius="0.05" src="#earth-tex" material="shader: flat;"
-                    planet="dist: 149600000; v_init: 29780"></a-sphere>
+          <a-sphere radius="0.04" src="#earth-tex" color="#2e65d9"
+                    planet="dist: 0.55; speed: 1"></a-sphere>
           
-          <a-sphere radius="0.035" src="#mars-tex" material="shader: flat;"
-                    planet="dist: 227900000; v_init: 24100"></a-sphere>
+          <a-sphere radius="0.03" src="#mars-tex" color="#d94c2e"
+                    planet="dist: 0.75; speed: 0.8"></a-sphere>
 
       </a-entity>
     </a-scene>
