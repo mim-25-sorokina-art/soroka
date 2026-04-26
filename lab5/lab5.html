@@ -1,1 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <script>
+      // Константи для фізичного моделювання
+      const G = 6.674e-11; 
+      const SUN_MASS = 1.989e30;
 
+      AFRAME.registerComponent('planet', {
+        schema: {
+          dist: {type: 'number'}, // Відстань від Сонця в км
+          mass: {type: 'number'}, // Маса планети
+          v_init: {type: 'number'} // Швидкість в м/с
+        },
+        init: function() {
+          // Масштаб: 1 млн км = 0.1 одиниці A-Frame
+          let scaleDist = (this.data.dist / 1000000) * 0.1;
+          this.el.setAttribute('position', {x: scaleDist, y: 0, z: 0});
+          
+          this.pos = [this.data.dist * 1000, 0, 0]; // в метрах
+          this.v = [0, 0, this.data.v_init];
+        },
+        tick: function(time, timeDelta) {
+          const dt = 86400 * 2; // Один кадр = 2 земні дні
+          
+          let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
+          let r = Math.sqrt(r2);
+          let accel = (G * SUN_MASS) / r2;
+          
+          for(let i=0; i<3; i++) {
+            let a = -accel * (this.pos[i] / r);
+            this.v[i] += a * dt;
+            this.pos[i] += this.v[i] * dt;
+          }
+
+          let visualScale = 1000000000; // для візуалізації
+          this.el.setAttribute('position', {
+            x: this.pos[0] / visualScale,
+            y: this.pos[1] / visualScale,
+            z: this.pos[2] / visualScale
+          });
+        }
+      });
+    </script>
+</head>
+<body>
+    <a-scene mindar-image="imageTargetSrc: ./target.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <img id="sun-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/sun.jpg">
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-sphere radius="0.1" src="#sun-tex"></a-sphere>
+
+        <a-sphere radius="0.04" color="blue" 
+                  planet="dist: 149600000; mass: 5.97e24; v_init: 29780">
+        </a-sphere>
+      </a-entity>
+    </a-scene>
+</body>
+</html>
