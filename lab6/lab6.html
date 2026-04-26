@@ -3,39 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Лабораторна №6 - Чотирикутник AR</title>
+    <title>Лабораторна №6</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
     <script>
       AFRAME.registerComponent('geometry-calculator', {
         init: function() {
-          this.markers = {
-            'A': document.querySelector('#mA'), 'B': document.querySelector('#mB'),
-            'C': document.querySelector('#mC'), 'D': document.querySelector('#mD')
-          };
-          this.visible = { 'A': false, 'B': false, 'C': false, 'D': false };
-          this.lines = {};
-          this.info = document.querySelector('#info-text');
+          // Чекаємо, поки сцена повністю завантажиться
+          this.el.sceneEl.addEventListener('renderstart', () => {
+            this.markers = {
+              'A': document.querySelector('#mA'),
+              'B': document.querySelector('#mB'),
+              'C': document.querySelector('#mC'),
+              'D': document.querySelector('#mD')
+            };
+            this.visible = { 'A': false, 'B': false, 'C': false, 'D': false };
+            this.lines = {};
+            this.info = document.querySelector('#info-text');
 
-          // Створюємо 4 лінії для периметра чотирикутника
-          const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
-          pairs.forEach(p => {
-            const l = document.createElement('a-cylinder');
-            l.setAttribute('radius', '0.01');
-            l.setAttribute('material', 'color: #00FF00');
-            l.setAttribute('visible', false);
-            this.el.sceneEl.appendChild(l);
-            this.lines[p.join('')] = l;
-          });
+            const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
+            pairs.forEach(p => {
+              const l = document.createElement('a-cylinder');
+              l.setAttribute('radius', '0.01');
+              l.setAttribute('material', 'color: #00FF00');
+              l.setAttribute('visible', false);
+              this.el.sceneEl.appendChild(l);
+              this.lines[p.join('')] = l;
+            });
 
-          Object.keys(this.markers).forEach(id => {
-            this.markers[id].addEventListener("targetFound", () => { this.visible[id] = true; });
-            this.markers[id].addEventListener("targetLost", () => { this.visible[id] = false; });
+            Object.keys(this.markers).forEach(id => {
+              if (this.markers[id]) {
+                this.markers[id].addEventListener("targetFound", () => { this.visible[id] = true; });
+                this.markers[id].addEventListener("targetLost", () => { this.visible[id] = false; });
+              }
+            });
+            this.ready = true;
           });
         },
 
-        calcDist: function(p1, p2) { return p1.distanceTo(p2); },
-        
         calcArea: function(p1, p2, p3) {
           const a = p1.distanceTo(p2), b = p2.distanceTo(p3), c = p3.distanceTo(p1);
           const s = (a + b + c) / 2;
@@ -43,11 +48,11 @@
         },
 
         tick: function() {
+          if (!this.ready) return;
           let perimeter = 0;
           const pos = {};
-          
-          // Оновлення ліній та збір позицій
           const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
+          
           pairs.forEach(pair => {
             const id1 = pair[0], id2 = pair[1];
             if (this.visible[id1] && this.visible[id2]) {
@@ -55,7 +60,6 @@
               this.markers[id1].object3D.getWorldPosition(v1);
               this.markers[id2].object3D.getWorldPosition(v2);
               pos[id1] = v1; pos[id2] = v2;
-
               const l = this.lines[id1+id2];
               const d = v1.distanceTo(v2);
               l.setAttribute('height', d);
@@ -66,24 +70,25 @@
             } else { this.lines[id1+id2].setAttribute('visible', false); }
           });
 
-          // Розрахунок площ трикутників, якщо видно всі 4 маркери
           if (this.visible.A && this.visible.B && this.visible.C && this.visible.D) {
             const sABC = this.calcArea(pos.A, pos.B, pos.C);
             const sADC = this.calcArea(pos.A, pos.D, pos.C);
-            const sABD = this.calcArea(pos.A, pos.B, pos.D);
-            const sBCD = this.calcArea(pos.B, pos.C, pos.D);
-            
-            this.info.setAttribute('value', 
-              `Perimeter: ${perimeter.toFixed(2)}m\nArea ABC: ${sABC.toFixed(3)}\nArea ADC: ${sADC.toFixed(3)}\nTotal Area: ${(sABC+sADC).toFixed(3)}`);
+            this.info.setAttribute('value', `Perimeter: ${perimeter.toFixed(2)}m\nTotal Area: ${(sABC+sADC).toFixed(3)}`);
           } else {
-            this.info.setAttribute('value', 'Scan all 4 markers (A, B, C, D)');
+            this.info.setAttribute('value', 'Scan A, B, C, D together');
           }
         }
       });
     </script>
 </head>
 <body style="margin: 0; overflow: hidden;">
-    <a-scene mindar-image="imageTargetSrc: ./targets6.mind; maxTrack: 4; filterMinCF: 0.0001;" vr-mode-ui="enabled: false" geometry-calculator>
+    <a-scene mindar-image="imageTargetSrc: ./targets6.mind; maxTrack: 4;" vr-mode-ui="enabled: false" geometry-calculator>
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-        <a-entity id="mA" mindar-image-target="targetIndex: 0"><a-sphere radius
+        <a-entity id="mA" mindar-image-target="targetIndex: 0"><a-sphere radius="0.05" color="red"></a-sphere></a-entity>
+        <a-entity id="mB" mindar-image-target="targetIndex: 1"><a-sphere radius="0.05" color="blue"></a-sphere></a-entity>
+        <a-entity id="mC" mindar-image-target="targetIndex: 2"><a-sphere radius="0.05" color="green"></a-sphere></a-entity>
+        <a-entity id="mD" mindar-image-target="targetIndex: 3"><a-sphere radius="0.05" color="orange"></a-sphere></a-entity>
+        <a-text id="info-text" value="Ready to scan..." position="-0.7 -1.2 -2" color="white" width="4"></a-text>
+    </a-scene>
+</body>
+</html>
