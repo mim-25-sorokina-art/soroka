@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Solar System - Lab 5</title>
+    <title>AR Solar System - Final Fix</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -36,7 +36,7 @@
             this.pos[i] += this.v[i] * dt;
           }
 
-          let visualScale = 1.3e9; 
+          let visualScale = 1.5e9; 
           this.el.setAttribute('position', {
             x: this.pos[0] / visualScale,
             y: this.pos[1] / visualScale,
@@ -47,26 +47,35 @@
     </script>
 </head>
 <body>
-    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: no;" 
+    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: yes;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false">
       
       <a-assets>
-          <img id="sun-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/sun.jpg">
-          <img id="mercury-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/mercury.jpg">
-          <img id="earth-tex" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/space/earth.jpg">
+          <img id="sun-tex" src="images/sun.jpg" crossorigin="anonymous">
+          <img id="earth-tex" src="images/earth.jpg" crossorigin="anonymous">
+          <img id="mars-tex" src="images/mars.jpg" crossorigin="anonymous">
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity light="type: ambient; intensity: 1.8;"></a-entity>
+      <a-entity light="type: ambient; intensity: 2.0;"></a-entity>
 
       <a-entity mindar-image-target="targetIndex: 0">
-          <a-sphere radius="0.15" src="#sun-tex" material="shader: flat;"></a-sphere>
+          
+          <a-sphere radius="0.12" src="#sun-tex" material="shader: flat; color: #f5d742;"></a-sphere>
 
-          <a-sphere radius="0.03" src="#mercury-tex" color="#8c8c8c" planet="dist: 57910000; v_init: 47400"></a-sphere>
-          <a-sphere radius="0.05" src="#earth-tex" color="#2b82c9" planet="dist: 149600000; v_init: 29780"></a-sphere>
+          <a-sphere radius="0.02" material="color: #9c9c9c;" src="images/mercury.jpg" planet="dist: 57910000; v_init: 47400"></a-sphere>
+          
+          <a-sphere radius="0.03" material="color: #ffe896;" src="images/venus.jpg" planet="dist: 108200000; v_init: 35020"></a-sphere>
+          
+          <a-sphere radius="0.04" material="color: #2e65d9;" src="#earth-tex" planet="dist: 149600000; v_init: 29780"></a-sphere>
+          
+          <a-sphere radius="0.03" material="color: #d94c2e;" src="#mars-tex" planet="dist: 227900000; v_init: 24100"></a-sphere>
+
+          <a-sphere radius="0.07" material="color: #bf8f54;" planet="dist: 778500000; v_init: 13070"></a-sphere>
+
       </a-entity>
     </a-scene>
 </body>
