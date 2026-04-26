@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Solar System - Final Fix</title>
+    <title>Сонячна система - Лабораторна 5</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <script>
+      // ФІЗИКА РУХУ
       const G = 6.674e-11; 
       const SUN_MASS = 1.989e30;
 
@@ -18,11 +19,12 @@
           v_init: {type: 'number'} 
         },
         init: function() {
+          // Масштабуємо: 1.5 млн км = 1 одиниця в AR
           this.pos = [this.data.dist * 1000, 0, 0]; 
           this.v = [0, 0, this.data.v_init];
         },
         tick: function(time, timeDelta) {
-          const dt = 86400 * 3; // Швидкість: 3 дні за кадр
+          const dt = 86400 * 3; // 1 кадр = 3 дні (щоб рух був помітним)
           
           let r2 = Math.pow(this.pos[0], 2) + Math.pow(this.pos[1], 2) + Math.pow(this.pos[2], 2);
           let r = Math.sqrt(r2);
@@ -46,35 +48,35 @@
       });
     </script>
 </head>
-<body>
-    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: yes;" 
-             color-space="sRGB" 
-             renderer="colorManagement: true, physicallyCorrectLights" 
-             vr-mode-ui="enabled: false">
+<body style="margin: 0; overflow: hidden;">
+    <a-scene mindar-image="imageTargetSrc: ./target.mind; autoStart: true; uiLoading: no;" 
+             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-          <img id="sun-tex" src="images/sun.jpg" crossorigin="anonymous">
-          <img id="earth-tex" src="images/earth.jpg" crossorigin="anonymous">
-          <img id="mars-tex" src="images/mars.jpg" crossorigin="anonymous">
+          <img id="sun-tex" src="images/sun.jpg">
+          <img id="mercury-tex" src="images/mercury.jpg">
+          <img id="venus-tex" src="images/venus.jpg">
+          <img id="earth-tex" src="images/earth.jpg">
+          <img id="mars-tex" src="images/mars.jpg">
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity light="type: ambient; intensity: 2.0;"></a-entity>
-
       <a-entity mindar-image-target="targetIndex: 0">
           
-          <a-sphere radius="0.12" src="#sun-tex" material="shader: flat; color: #f5d742;"></a-sphere>
+          <a-sphere radius="0.12" src="#sun-tex" material="shader: flat;"></a-sphere>
 
-          <a-sphere radius="0.02" material="color: #9c9c9c;" src="images/mercury.jpg" planet="dist: 57910000; v_init: 47400"></a-sphere>
+          <a-sphere radius="0.02" src="#mercury-tex" 
+                    planet="dist: 57910000; v_init: 47400"></a-sphere>
           
-          <a-sphere radius="0.03" material="color: #ffe896;" src="images/venus.jpg" planet="dist: 108200000; v_init: 35020"></a-sphere>
+          <a-sphere radius="0.035" src="#venus-tex" 
+                    planet="dist: 108200000; v_init: 35020"></a-sphere>
           
-          <a-sphere radius="0.04" material="color: #2e65d9;" src="#earth-tex" planet="dist: 149600000; v_init: 29780"></a-sphere>
+          <a-sphere radius="0.045" src="#earth-tex" 
+                    planet="dist: 149600000; v_init: 29780"></a-sphere>
           
-          <a-sphere radius="0.03" material="color: #d94c2e;" src="#mars-tex" planet="dist: 227900000; v_init: 24100"></a-sphere>
-
-          <a-sphere radius="0.07" material="color: #bf8f54;" planet="dist: 778500000; v_init: 13070"></a-sphere>
+          <a-sphere radius="0.035" src="#mars-tex" 
+                    planet="dist: 227900000; v_init: 24100"></a-sphere>
 
       </a-entity>
     </a-scene>
