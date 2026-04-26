@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lab 6 - Geometry Network</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
+    
+    <script>
+      AFRAME.registerComponent('geometry-network', {
+        init: function() {
+          this.markers = {
+            'A': document.querySelector('#marker-a'),
+            'B': document.querySelector('#marker-b'),
+            'C': document.querySelector('#marker-c'),
+            'D': document.querySelector('#marker-d')
+          };
+          this.visible = { 'A': false, 'B': false, 'C': false, 'D': false };
+          this.lines = {};
+          this.infoText = document.querySelector('#info-text');
 
+          // Створюємо лінії для чотирикутника (A-B, B-C, C-D, D-A)
+          const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
+          pairs.forEach(pair => {
+            const line = document.createElement('a-cylinder');
+            line.setAttribute('radius', '0.01');
+            line.setAttribute('material', 'color: #00ff00; emissive: #00ff00');
+            line.setAttribute('visible', false);
+            this.el.sceneEl.appendChild(line);
+            this.lines[pair.join('')] = line;
+          });
+
+          // Обробка видимості
+          Object.keys(this.markers).forEach(id => {
+            this.markers[id].addEventListener("targetFound", () => { this.visible[id] = true; });
+            this.markers[id].addEventListener("targetLost", () => { this.visible[id] = false; });
+          });
+        },
+
+        updateLine: function(line, m1, m2) {
+          const p1 = new THREE.Vector3();
+          const p2 = new THREE.Vector3();
+          m1.object3D.getWorldPosition(p1);
+          m2.object3D.getWorldPosition(p2);
+
+          const distance = p1.distanceTo(p2);
+          line.setAttribute('height', distance);
+          line.setAttribute('position', {
+            x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2, z: (p1.z + p2.z) / 2
+          });
+          line.object3D.lookAt(p2);
+          line.object3D.rotateX(Math.PI / 2);
+          line.setAttribute('visible', true);
+          return distance;
+        },
+
+        tick: function() {
+          let perimeter = 0;
+          let visibleCount = 0;
+          const p = {}; // Позиції для розрахунку площі
+
+          const pairs = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
+          pairs.forEach(pair => {
+            const id1 = pair[0], id2 = pair[1];
+            if (this.visible[id1] && this.visible[id2]) {
+              perimeter += this.updateLine(this.lines[id1+id2], this.markers[id1], this.markers[id2]);
+            } else {
+              this.lines[id1+id2].setAttribute('visible', false);
+            }
+          });
+
+          // Розрахунок площі трикутників (ABC та ADC) для чотирикутника
+          if (this.visible['A'] && this.visible['B'] && this.visible['C'] && this.visible['D']) {
+            const getPos = (id) => {
+              const vec = new THREE.Vector3();
+              this.markers[id].object3D.getWorldPosition(vec);
+              return vec;
+            };
+            
+            const a = getPos('A'), b = getPos('B'), c = getPos('C'), d = getPos('D');
+            
+            const areaABC = this.calcArea(a, b, c);
+            const areaADC = this.calcArea(a, d, c);
+            
+            this.infoText.setAttribute('value', 
+              `Perimeter: ${perimeter.toFixed(2)}m\nArea ABC: ${areaABC.toFixed(3)}m2\nArea ADC: ${areaADC.toFixed(3)}m2\nTotal: ${(areaABC+areaADC).toFixed(3)}m2`);
+          }
+        },
+
+        calcArea: function(p1, p2, p3) {
+          const a = p1.distanceTo(p2);
+          const b = p2.distanceTo(p3);
+          const c = p3.distanceTo(p1);
+          const s = (a + b + c) / 2;
+          return Math.sqrt(s * (s - a) * (s - b) * (s - c)) || 0;
+        }
+      });
+    </script>
+</head>
+<body>
+    <a-scene mindar-image="imageTargetSrc: ./targets6.mind; maxTrack: 4;" 
+             vr-mode-ui="enabled: false" geometry-network>
+        
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <a-entity id="marker-a" mindar-image-target="targetIndex: 0">
+            <a-sphere radius="0.05" color="red"></a-sphere>
+            <a-text value="A" align="center" position="0 0.1 0"></a-text>
+        </a-entity>
+        
+        <a-entity id="marker-b" mindar-image-target="targetIndex: 1">
+            <a-sphere radius="0.05" color="blue"></a-sphere>
+            <a-text value="B" align="center" position="0 0.1 0"></a-text>
+        </a-entity>
+
+        <a-entity id="marker-c" mindar-image-target="targetIndex: 2">
+            <a-sphere radius="0.05" color="green"></a-sphere>
+            <a-text value="C" align="center" position="0 0.1 0"></a-text>
+        </a-entity>
+
+        <a-entity id="marker-d" mindar-image-target="targetIndex: 3">
+            <a-sphere radius="0.05" color="orange"></a-sphere>
+            <a-text value="D" align="center" position="0 0.1 0"></a-text>
+        </a-entity>
+
+        <a-text id="info-text" value="Detect all 4 markers" 
+                position="-0.5 -1 -2" color="white" width="3"></a-text>
+
+    </a-scene>
+</body>
+</html>
