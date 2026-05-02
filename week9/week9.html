@@ -2,17 +2,22 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тиждень 9 - Video & Model AR</title>
+    <title>Тиждень 9 - Fixed AR</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #ui { position: absolute; z-index: 1000; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; text-align: center; font-family: sans-serif; pointer-events: none; }
+    </style>
 </head>
 <body>
+    <div id="ui">Наведіть на маркер 1 (Відео) або маркер 2 (Модель)</div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; uiScanning: yes;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Відео для першого маркера -->
-            <video id="myVideo" src="./video.mp4" preload="auto" loop="true" crossorigin="anonymous"></video>
-            <!-- Модель для другого маркера -->
+            <!-- Додав muted для кращого запуску -->
+            <video id="myVideo" src="./video.mp4" preload="auto" loop="true" crossorigin="anonymous" muted playsinline></video>
             <a-asset-item id="myModel" src="./model.glb"></a-asset-item>
         </a-assets>
 
@@ -20,26 +25,44 @@
 
         <!-- Маркер 1: ВІДЕО -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-video src="#myVideo" width="1" height="0.6" position="0 0 0" 
-                     play-on-click></a-video>
+            <a-video src="#myVideo" width="1" height="0.6" position="0 0 0"></a-video>
         </a-entity>
 
-        <!-- Маркер 2: МОДЕЛЬ -->
+        <!-- Маркер 2: МОДЕЛЬ з нормальним світлом та масштабом -->
         <a-entity mindar-image-target="targetIndex: 1">
-            <a-gltf-model src="#myModel" scale="0.2 0.2 0.2" position="0 0 0" 
-                          animation="property: rotation; to: 0 360 0; dur: 5000; easing: linear; loop: true">
+            <!-- Додав навколишнє світло спеціально для моделі -->
+            <a-light type="ambient" intensity="1"></a-light>
+            <a-light type="directional" position="0 1 1" intensity="0.5"></a-light>
+            
+            <a-gltf-model src="#myModel" 
+                          scale="1 1 1" 
+                          position="0 0 0" 
+                          rotation="0 0 0"
+                          animation="property: rotation; to: 0 360 0; dur: 8000; easing: linear; loop: true">
             </a-gltf-model>
         </a-entity>
 
     </a-scene>
 
     <script>
-        // Скрипт для запуску відео при знаходженні маркера
         const video = document.querySelector('#myVideo');
         const scene = document.querySelector('a-scene');
-        scene.addEventListener('targetFound', event => {
-            if (event.detail.targetIndex === 0) video.play();
+        
+        // Спроба запустити звук при кліку на екран
+        document.body.addEventListener('click', () => {
+            video.muted = false;
+            video.play();
         });
+
+        scene.addEventListener('targetFound', event => {
+            if (event.detail.targetIndex === 0) {
+                video.play();
+                console.log("Маркер 1 знайдено: відео грає");
+            } else {
+                console.log("Маркер 2 знайдено: модель має бути видно");
+            }
+        });
+
         scene.addEventListener('targetLost', event => {
             if (event.detail.targetIndex === 0) video.pause();
         });
