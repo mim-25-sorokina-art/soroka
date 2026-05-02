@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 2.0 - AR Three.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-three.prod.js"></script>
+    <style> body { margin: 0; } canvas { display: block; } </style>
+</head>
+<body>
+    <script>
+    const init = async () => {
+        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+            container: document.body,
+            imageTargetSrc: './atlas.mind',
+        });
+        const {renderer, scene, camera} = mindarThree;
+
+        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        scene.add(light);
+
+        // Труба (Тор)
+        const torus = new THREE.Mesh(
+            new THREE.TorusGeometry(0.5, 0.03, 16, 100),
+            new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.3})
+        );
+        torus.rotation.x = Math.PI / 2;
+
+        // Протони
+        const protonGeom = new THREE.SphereGeometry(0.05, 32, 32);
+        const redProton = new THREE.Mesh(protonGeom, new THREE.MeshBasicMaterial({color: 0xff0000}));
+        const blueProton = new THREE.Mesh(protonGeom, new THREE.MeshBasicMaterial({color: 0x0000ff}));
+
+        const anchor = mindarThree.addAnchor(0);
+        anchor.group.add(torus);
+        anchor.group.add(redProton);
+        anchor.group.add(blueProton);
+
+        await mindarThree.start();
+        
+        const clock = new THREE.Clock();
+        renderer.setAnimationLoop(() => {
+            const t = clock.getElapsedTime() * 2;
+            redProton.position.set(Math.cos(t) * 0.5, 0, Math.sin(t) * 0.5);
+            blueProton.position.set(Math.cos(-t) * 0.5, 0, Math.sin(-t) * 0.5);
+            renderer.render(scene, camera);
+        });
+    }
+    init();
+    </script>
+</body>
+</html>
