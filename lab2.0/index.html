@@ -2,73 +2,70 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab 2.0 - Fixed Three.js AR</title>
-    <!-- Підключаємо Three.js першим -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Підключаємо MindAR другим -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-three.prod.js"></script>
+    <title>Lab 2.0 - Stable AR</title>
+    <!-- Використовуємо надійні версії бібліотек -->
+    <script src="https://unpkg.com/three@0.133.1/build/three.min.js"></script>
+    <script src="https://unpkg.com/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; }
+        body { margin: 0; overflow: hidden; background: #000; }
         #startButton {
             position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-            padding: 20px 40px; font-size: 20px; z-index: 100;
-            background: #007bff; color: white; border: none; border-radius: 10px; cursor: pointer;
+            padding: 20px 40px; font-size: 20px; z-index: 1000;
+            background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
-    <button id="startButton">ЗАПУСТИТИ КОЛАЙДЕР</button>
+    <button id="startButton">ВІДКРИТИ КАМЕРУ</button>
 
     <script>
         const start = async () => {
-            const startButton = document.getElementById('startButton');
-            startButton.style.display = 'none';
+            document.getElementById('startButton').style.display = 'none';
 
-            // Перевіряємо наявність бібліотеки перед ініціалізацією
-            if (!window.MINDAR || !window.MINDAR.IMAGE) {
-                alert("Помилка завантаження бібліотек. Спробуйте оновити сторінку.");
+            // Перевірка наявності бібліотек у вікні браузера
+            if (typeof THREE === 'undefined' || !window.MINDAR) {
+                alert("Помилка: Бібліотеки не завантажені. Перевірте з'єднання з інтернетом або спробуйте інший браузер.");
                 return;
             }
 
-            const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-                container: document.body,
-                imageTargetSrc: './atlas.mind',
-            });
+            try {
+                const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+                    container: document.body,
+                    imageTargetSrc: './atlas.mind',
+                });
 
-            const {renderer, scene, camera} = mindarThree;
+                const {renderer, scene, camera} = mindarThree;
 
-            // Додаємо світло
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-            scene.add(light);
+                scene.add(new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1));
 
-            // Створюємо тор (трубу)
-            const torus = new THREE.Mesh(
-                new THREE.TorusGeometry(0.5, 0.03, 16, 100),
-                new THREE.MeshStandardMaterial({color: 0xffffff, transparent: true, opacity: 0.3})
-            );
-            torus.rotation.x = Math.PI / 2;
+                const torus = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.5, 0.03, 16, 100),
+                    new THREE.MeshStandardMaterial({color: 0xffffff, transparent: true, opacity: 0.4})
+                );
+                torus.rotation.x = Math.PI / 2;
 
-            // Створюємо протони
-            const pGeom = new THREE.SphereGeometry(0.05, 32, 32);
-            const pRed = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({color: 0xff0000}));
-            const pBlue = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({color: 0x0000ff}));
+                const pGeom = new THREE.SphereGeometry(0.05, 32, 32);
+                const pRed = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({color: 0xff0000}));
+                const pBlue = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({color: 0x0000ff}));
 
-            // Прив'язуємо об'єкти до маркера
-            const anchor = mindarThree.addAnchor(0);
-            anchor.group.add(torus);
-            anchor.group.add(pRed);
-            anchor.group.add(pBlue);
+                const anchor = mindarThree.addAnchor(0);
+                anchor.group.add(torus);
+                anchor.group.add(pRed);
+                anchor.group.add(pBlue);
 
-            await mindarThree.start();
-            
-            const clock = new THREE.Clock();
-            renderer.setAnimationLoop(() => {
-                const t = clock.getElapsedTime() * 2;
-                // Анімація руху назустріч
-                pRed.position.set(Math.cos(t) * 0.5, 0, Math.sin(t) * 0.5);
-                pBlue.position.set(Math.cos(-t) * 0.5, 0, Math.sin(-t) * 0.5);
-                renderer.render(scene, camera);
-            });
+                await mindarThree.start();
+                
+                const clock = new THREE.Clock();
+                renderer.setAnimationLoop(() => {
+                    const t = clock.getElapsedTime() * 2;
+                    pRed.position.set(Math.cos(t) * 0.5, 0, Math.sin(t) * 0.5);
+                    pBlue.position.set(Math.cos(-t) * 0.5, 0, Math.sin(-t) * 0.5);
+                    renderer.render(scene, camera);
+                });
+            } catch (err) {
+                alert("Помилка запуску AR: " + err.message);
+            }
         };
 
         document.getElementById('startButton').addEventListener('click', start);
