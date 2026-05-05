@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11 - Final Face Mesh</title>
-    <!-- Використовуємо перевірені версії -->
+    <title>Week 11.2 - Grey Face Mesh</title>
+    <!-- Використовуємо стабільну комбінацію бібліотек -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
     
     <style>
         body { margin: 0; overflow: hidden; }
-        /* Додамо індикатор завантаження */
-        #scanning-overlay {
-            display: flex; align-items: center; justify-content: center;
-            position: absolute; left: 0; right: 0; top: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); color: white; z-index: 2;
-            font-family: sans-serif;
+        /* Повідомлення для користувача, поки вантажиться ШІ */
+        #loading-text {
+            position: absolute; width: 100%; top: 50%; text-align: center;
+            color: white; font-family: Arial, sans-serif; z-index: 999;
         }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div id="scanning-overlay">Завантаження ШІ-моделі... зачекайте 10 сек.</div>
+    <div id="loading-text">Зачекайте, ШІ малює сітку...</div>
 
     <a-scene 
         mindar-face 
@@ -33,16 +30,20 @@
         
         <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Цей компонент автоматично малює сіру сітку на все обличчя -->
+        <!-- Цей блок відповідає за ТУ САМУ сіру маску -->
         <a-entity mindar-face-target="anchorIndex: 1">
-            <a-entity mindar-face-mesh material="color: #808080; opacity: 0.7; transparent: true"></a-entity>
+            <a-entity 
+                mindar-face-mesh 
+                material="color: #808080; opacity: 0.6; transparent: true; wireframe: false">
+            </a-entity>
         </a-entity>
+
     </a-scene>
 
     <script>
-        // Приховуємо напис, коли сцена готова
+        // Коли система AR готова, прибираємо напис
         document.querySelector('a-scene').addEventListener("arReady", (event) => {
-           document.querySelector('#scanning-overlay').classList.add('hidden');
+           document.querySelector('#loading-text').style.display = 'none';
         });
     </script>
 </body>
