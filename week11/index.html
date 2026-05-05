@@ -5,23 +5,21 @@
     <title>Week 11 - Face Mask</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; }
-    </style>
+    <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
-            <!-- Пряме посилання на перевірений прозорий бантик, щоб точно спрацювало -->
-            <img id="maskTexture" src="https://raw.githubusercontent.com/hiukim/mind-ar-js/master/examples/face-tracking/assets/hat/thumbnail.png" crossorigin="anonymous">
+            <!-- ТУТ Я ВПИСАВ ВАШУ НАЗВУ ФАЙЛУ -->
+            <img id="maskTexture" src="./pngwing.com.png">
         </a-assets>
 
         <a-camera active="false" position="0 0 0"></a-camera>
 
         <a-entity mindar-face-target="anchorIndex: 10">
             <a-image src="#maskTexture" 
-                     width="0.6" height="0.4" 
-                     position="0 0.2 0.05" 
+                     width="0.6" height="0.6" 
+                     position="0 0.2 0.1" 
                      transparent="true"
                      alpha-test="0.5">
             </a-image>
