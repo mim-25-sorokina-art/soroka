@@ -2,8 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11 - Face Mask</title>
-    <!-- Підключення бібліотек A-Frame та MindAR для обличчя -->
+    <title>Week 11 - Final Mask</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
     <style>
@@ -11,25 +10,23 @@
     </style>
 </head>
 <body>
-    <!-- Ініціалізація сцени відстеження обличчя -->
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        
         <a-assets>
-            <!-- Використовуємо вашу назву файлу зі скриншота image_0eb57f.png -->
-            <img id="maskTexture" src="./pngwing.com.png">
+            <!-- Ваша картинка бантика -->
+            <img id="maskTexture" src="./mask.png">
         </a-assets>
 
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- Прив'язка до верхньої частини лоба (точка 10) -->
+        <!-- anchorIndex: 10 — це точка на лобі, під волоссям -->
         <a-entity mindar-face-target="anchorIndex: 10">
             <a-image src="#maskTexture" 
-                     width="0.6" height="0.5" 
-                     position="0 0.15 0.1" 
+                     width="0.6" height="0.4" 
+                     position="0 0.15 0.05" 
+                     rotation="0 0 0"
                      transparent="true">
             </a-image>
         </a-entity>
-
     </a-scene>
 </body>
 </html>
