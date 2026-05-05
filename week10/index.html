@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Week 10 - Hand Angles</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; }
+        canvas { border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 100%; }
+        #info { background: white; padding: 15px; border-radius: 8px; margin-top: 10px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <h2>Тиждень 10: Обчислення кутів пальців</h2>
+    <video id="input_video" style="display:none;"></video>
+    <canvas id="output_canvas" width="640" height="480"></canvas>
+    <div id="info">Зачекайте, завантаження моделі...</div>
+
+    <script>
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const infoDiv = document.getElementById('info');
+
+        // Функція для розрахунку вектора між MCP та TIP
+        function getFingerVector(landmarks, mcpIdx, tipIdx) {
+            const mcp = landmarks[mcpIdx];
+            const tip = landmarks[tipIdx];
+            return { x: tip.x - mcp.x, y: tip.y - mcp.y, z: tip.z - mcp.z };
+        }
+
+        // Скалярний добуток та знаходження кута
+        function calculateAngle(v1, v2) {
+            const dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+            const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+            const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
+            const cosTheta = dotProduct / (mag1 * mag2);
+            return (Math.acos(Math.max(-1, Math.min(1, cosTheta))) * (180 / Math.PI)).toFixed(1);
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+                drawConnectors(canvasCtx, hand, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+                drawLandmarks(canvasCtx, hand, {color: '#FF0000', lineWidth: 2});
+
+                // Визначаємо вектори пальців (MCP -> TIP) за схемою:
+                // Великий (2-4), Вказівний (5-8), Середній (9-12), Підмізинний (13-16), Мізинець (17-20)
+                const thumb = getFingerVector(hand, 2, 4);
+                const index = getFingerVector(hand, 5, 8);
+                const middle = getFingerVector(hand, 9, 12);
+                const ring = getFingerVector(hand, 13, 16);
+                const pinky = getFingerVector(hand, 17, 20);
+
+                // Обчислюємо кути між сусідніми пальцями
+                const a1 = calculateAngle(thumb, index);
+                const a2 = calculateAngle(index, middle);
+                const a3 = calculateAngle(middle, ring);
+                const a4 = calculateAngle(ring, pinky);
+
+                infoDiv.innerHTML = `
+                    <b>Кути між пальцями:</b><br>
+                    Великий - Вказівний: ${a1}°<br>
+                    Вказівний - Середній: ${a2}°<br>
+                    Середній - Підмізинний: ${a3}°<br>
+                    Підмізинний - Мізинець: ${a4}°
+                `;
+            } else {
+                infoDiv.innerText = "Покажіть руку в камеру";
+            }
+            canvasCtx.restore();
+        }
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 640, height: 480
+        });
+        camera.start();
+    </script>
+</body>
+</html>
