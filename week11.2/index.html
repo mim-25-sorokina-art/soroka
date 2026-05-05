@@ -2,35 +2,30 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Face Mesh Video Version</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
+    <title>Week 11.2 - Final Stable Version</title>
+    <!-- Використовуємо перевірені версії бібліотек -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
     <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
+    <!-- mindar-face автоматично ініціалізує систему відстеження -->
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        <a-assets>
-            <!-- Модель голови, яка створює об'єм -->
-            <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-head-occluder.glb"></a-asset-item>
-        </a-assets>
-
+        
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- Основний об'єкт відстеження -->
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <!-- Сама сітка обличчя (mesh) -->
-            <a-entity mindar-face-mesh material="wireframe: true; color: #888888"></a-entity>
-            
-            <!-- Оклюдер (ховає сітку за носом/щоками, як у 3D) -->
-            <a-gltf-model src="#headModel" class="mindar-face-occluder"></a-gltf-model>
+        <!-- Сутність, яка відображає саму сітку обличчя -->
+        <a-entity mindar-face-target="anchorIndex: 1">
+            <!-- wireframe: true створює саме той ефект сітки, як у відео -->
+            <a-entity mindar-face-mesh material="wireframe: true; color: #444444"></a-entity>
         </a-entity>
 
-        <!-- Сфери на очах (як у відео) -->
+        <!-- Білі сфери на очах -->
         <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="#ffffff" radius="0.02"></a-sphere>
+            <a-sphere color="white" radius="0.015"></a-sphere>
         </a-entity>
         <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="#ffffff" radius="0.02"></a-sphere>
+            <a-sphere color="white" radius="0.015"></a-sphere>
         </a-entity>
 
     </a-scene>
