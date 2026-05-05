@@ -2,37 +2,25 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11 - Face Mask AR</title>
+    <title>Week 11 - Fixed Mask</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; }
-    </style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
-            <!-- Ваша маска (замініть mask.png на власну картинку) -->
             <img id="maskTexture" src="./mask.png">
-            <!-- Стандартна 3D-модель голови для правильного накладання -->
-            <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-head-occluder.glb"></a-asset-item>
         </a-assets>
 
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- Оклюдер: робить так, щоб маска ховалася за ніс чи щоки, як справжня -->
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <a-gltf-model mindar-face-occluder src="#headModel"></a-gltf-model>
-        </a-entity>
-
-        <!-- Сама маска: прив'язана до перенісся (точка 168) -->
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <a-image src="#maskTexture" width="0.5" height="0.5" position="0 0 0" transparent="true"></a-image>
-        </a-entity>
-
-        <!-- Приклад 3D-об'єкта на голові (сфера над головою) -->
+        <!-- Прив'язка до верхньої частини лоба (точка 10) -->
         <a-entity mindar-face-target="anchorIndex: 10">
-            <a-sphere color="red" radius="0.1" position="0 0.3 0"></a-sphere>
+            <a-image src="#maskTexture" 
+                     width="0.6" height="0.4" 
+                     position="0 0.1 0.1" 
+                     transparent="true">
+            </a-image>
         </a-entity>
     </a-scene>
 </body>
