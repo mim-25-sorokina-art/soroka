@@ -1,57 +1,129 @@
 <!doctype html>
 <html lang="uk">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Авто-камера + маска (MediaPipe)</title>
-  <style>
-    :root{--bg:#0f1720;--panel:#0b1220;--accent:#2b6cff;--muted:#9aa6c0}
-    html,body{height:100%;margin:0;background:var(--bg);color:#e6eef8;font-family:Inter,Arial,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;padding:18px}
-    .card{width:880px;max-width:96%;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:14px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
-    h3{margin:6px 0 12px 0;font-weight:600}
-    #container{position:relative;border-radius:8px;overflow:hidden;background:#000}
-    video{display:none}
-    canvas{display:block;width:100%;height:auto;background:#000}
-    .toolbar{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-    button{background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
-    button.secondary{background:#2b2f3a}
-    .status{margin-left:auto;color:var(--muted);font-size:13px}
-    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.04);font-size:13px}
-    .hint{color:var(--muted);font-size:13px;margin-top:8px}
-    label{font-size:13px;color:var(--muted)}
-    input[type=color]{width:44px;height:34px;border:0;padding:0;background:none;cursor:pointer}
-    input[type=range]{width:140px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Camera Debug + Mask Test</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#0b1220;color:#e6eef8;display:flex;flex-direction:column;align-items:center;padding:18px}
+  #card{width:880px;max-width:96%;background:#0f1720;padding:12px;border-radius:10px}
+  video{display:none}
+  canvas{width:100%;border-radius:8px;background:#000}
+  .controls{display:flex;gap:8px;margin-top:10px;align-items:center}
+  button{padding:8px 12px;border-radius:8px;border:none;background:#2b6cff;color:#fff;cursor:pointer}
+  #log{margin-top:10px;background:#071022;padding:10px;border-radius:8px;color:#cfe8ff;white-space:pre-wrap;max-height:180px;overflow:auto}
+  .error{color:#ff9b9b}
+</style>
 </head>
 <body>
-  <div class="card">
-    <h3>Автоматичне виявлення обличчя і маска</h3>
-    <div id="container">
+  <div id="card">
+    <h3>Тест камери і маски</h3>
+    <div>
       <video id="video" playsinline></video>
       <canvas id="canvas"></canvas>
     </div>
-
-    <div class="toolbar">
-      <label>Колір маски: <input id="maskColor" type="color" value="#ff66aa"></label>
-      <label>Альфа: <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.6"></label>
-      <label>Розмиття: <input id="blur" type="range" min="0" max="30" step="1" value="12"></label>
-      <button id="startBtn">Запустити камеру</button>
-      <button id="stopBtn" class="secondary">Зупинити</button>
-      <div class="status"><span id="faceStatus" class="badge">Обличчя: невиявлено</span></div>
+    <div class="controls">
+      <button id="start">Запустити камеру</button>
+      <button id="stop">Зупинити</button>
+      <label>Колір <input id="color" type="color" value="#ff66aa"></label>
+      <label>Альфа <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.6"></label>
     </div>
-
-    <div class="hint">Дозволь доступ до камери. Якщо автозапуск заблоковано — натисни «Запустити камеру». Працює на HTTPS або localhost.</div>
+    <div id="log">Логи зʼявляться тут</div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
-  <script>
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('start');
+const stopBtn = document.getElementById('stop');
+const logEl = document.getElementById('log');
+const colorInput = document.getElementById('color');
+const alphaInput = document.getElementById('alpha');
 
-  const maskColorInput = document.getElementById('maskColor');
-  const alphaInput = document.getElementById('alpha');
-  const blurInput = document.getElementById('blur');
-  const startBtn = document.get
+function log(msg, isError=false){
+  const time = new Date().toLocaleTimeString();
+  logEl.textContent = `[${time}] ${msg}\n` + logEl.textContent;
+  if(isError) logEl.classList.add('error'); else logEl.classList.remove('error');
+}
+
+// Простий маскувальний рендер без складної обробки для перевірки
+function drawMaskOnFrame(image){
+  const w = image.width, h = image.height;
+  if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(image,0,0,w,h);
+  // простий еліпс по центру як тестова маска
+  ctx.save();
+  ctx.globalAlpha = parseFloat(alphaInput.value);
+  ctx.fillStyle = colorInput.value;
+  ctx.beginPath();
+  ctx.ellipse(w/2, h/2, w*0.35, h*0.45, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Ініціалізація FaceMesh
+const faceMesh = new FaceMesh.FaceMesh({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+faceMesh.setOptions({maxNumFaces:1, refineLandmarks:false, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
+faceMesh.onResults((res)=>{
+  if (!res || !res.image) return;
+  drawMaskOnFrame(res.image);
+  if (!res.multiFaceLandmarks || res.multiFaceLandmarks.length===0){
+    log('Обличчя не знайдено');
+  } else {
+    log('Обличчя знайдено — маска застосована');
+  }
+});
+
+let camera = null;
+
+async function startCamera(){
+  log('Запит доступу до камери...');
+  try {
+    camera = new Camera.Camera(video, {
+      onFrame: async () => { await faceMesh.send({image: video}); },
+      width: 1280, height: 720
+    });
+    await camera.start();
+    log('Камера запущена');
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    video.style.display = 'block';
+  } catch (err) {
+    log('Помилка при запуску камери: ' + (err && err.message ? err.message : err), true);
+    console.error(err);
+    // детальніша класифікація помилок
+    if (err.name === 'NotAllowedError' || err.name === 'SecurityError') log('Дозвіл на камеру відхилено. Дозволь камеру в налаштуваннях сайту.', true);
+    if (err.name === 'NotFoundError') log('Камера не знайдена. Перевір підключення пристрою.', true);
+    if (err.name === 'OverconstrainedError') log('Параметри камери не задовольняються. Спробуй інший пристрій або роздільність.', true);
+    if (err.name === 'NotReadableError') log('Камера зайнята іншим додатком. Закрий інші програми.', true);
+  }
+}
+
+function stopCamera(){
+  try {
+    if (camera && camera.stop) camera.stop();
+    if (video.srcObject){
+      video.srcObject.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+    }
+  } catch(e){ console.warn(e); }
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  log('Камера зупинена');
+}
+
+startBtn.addEventListener('click', startCamera);
+stopBtn.addEventListener('click', stopCamera);
+
+// Автостарт з обробкою помилок (може бути заблоковано браузером)
+window.addEventListener('load', async () => {
+  try { await startCamera(); } catch(e){ log('Автостарт не вдався — натисни Запустити камеру', true); }
+});
+</script>
+</body>
+</html>
