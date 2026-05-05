@@ -2,43 +2,28 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тиждень 11 - Обличчя як маркер</title>
+    <title>Week 11.2 - Full Face Mesh</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
     <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        <a-assets>
-            <!-- Ваша маска -->
-            <img id="maskTexture" src="./pngwing.com.png">
-            <!-- 3D модель голови для оклюзії (щоб маска була об'ємною) -->
-            <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-head-occluder.glb"></a-asset-item>
-        </a-assets>
-
+        
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- 1. СТВОРЮЄМО СІТКУ ОБЛИЧЧЯ (як на скриншоті завдання) -->
+        <!-- Основна сітка обличчя -->
         <a-entity mindar-face-target="anchorIndex: 168">
-            <a-gltf-model mindar-face-occluder src="#headModel"></a-gltf-model>
+            <!-- Цей рядок створює саме ту сіру сітку, яку просив викладач -->
+            <a-entity mindar-face-mesh material="wireframe: true; color: #444444; opacity: 0.5"></a-entity>
         </a-entity>
 
-        <!-- 2. НАКЛАДАЄМО ВАШУ МАСКУ -->
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <a-image src="#maskTexture" 
-                     width="1.0" height="0.7" 
-                     position="0 0 0.06" 
-                     transparent="true"
-                     alpha-test="0.5">
-            </a-image>
-        </a-entity>
-
-        <!-- 3. ДОДАЄМО ЕФЕКТИ ОЧЕЙ (як на зразку) -->
+        <!-- Білі крапки на очах (як на вашому скриншоті) -->
         <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="#ffffff" radius="0.02" opacity="0.8"></a-sphere>
+            <a-sphere color="white" radius="0.018"></a-sphere>
         </a-entity>
         <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="#ffffff" radius="0.02" opacity="0.8"></a-sphere>
+            <a-sphere color="white" radius="0.018"></a-sphere>
         </a-entity>
 
     </a-scene>
