@@ -4,18 +4,42 @@
     <meta charset="UTF-8">
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
+    <style>
+        #status {
+            position: absolute; z-index: 1000; left: 10px; top: 10px;
+            color: white; background: rgba(0,0,0,0.7); padding: 10px;
+            border-radius: 5px; font-family: sans-serif;
+        }
+    </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
+    <div id="status">Статус: Очікування обличчя... (Підійдіть до світла)</div>
+
     <a-scene mindar-face embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-camera active="false" position="0 0 0"></a-camera>
         
-        <a-entity mindar-face-target="anchorIndex: 10">
-            <!-- Збільшуємо яскравість і товщину ліній сітки -->
+        <a-entity mindar-face-target="anchorIndex: 1">
+            <!-- wireframe: true дозволяє побачити структуру маски (як на рис. 4.5 у посібнику) -->
             <a-entity 
                 mindar-face-mesh 
-                material="color: #00FF00; opacity: 1; transparent: false; wireframe: true; wireframeLinewidth: 5">
+                material="color: #808080; opacity: 0.5; transparent: true; wireframe: true">
             </a-entity>
         </a-entity>
     </a-scene>
+
+    <script>
+        const status = document.getElementById('status');
+        document.querySelector('a-scene').addEventListener("arReady", () => {
+            status.innerHTML = "Система AR готова. ШІ шукає опорні точки...";
+        });
+        document.querySelector('a-scene').addEventListener("targetFound", () => {
+            status.innerHTML = "Обличчя знайдено! Маска накладена.";
+            status.style.background = "rgba(0,150,0,0.7)";
+        });
+        document.querySelector('a-scene').addEventListener("targetLost", () => {
+            status.innerHTML = "Обличчя втрачено. Поверніться до світла.";
+            status.style.background = "rgba(150,0,0,0.7)";
+        });
+    </script>
 </body>
 </html>
