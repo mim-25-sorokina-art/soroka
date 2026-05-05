@@ -1,129 +1,132 @@
 <!doctype html>
 <html lang="uk">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Camera Debug + Mask Test</title>
-<style>
-  body{font-family:Arial,Helvetica,sans-serif;background:#0b1220;color:#e6eef8;display:flex;flex-direction:column;align-items:center;padding:18px}
-  #card{width:880px;max-width:96%;background:#0f1720;padding:12px;border-radius:10px}
-  video{display:none}
-  canvas{width:100%;border-radius:8px;background:#000}
-  .controls{display:flex;gap:8px;margin-top:10px;align-items:center}
-  button{padding:8px 12px;border-radius:8px;border:none;background:#2b6cff;color:#fff;cursor:pointer}
-  #log{margin-top:10px;background:#071022;padding:10px;border-radius:8px;color:#cfe8ff;white-space:pre-wrap;max-height:180px;overflow:auto}
-  .error{color:#ff9b9b}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindAR Face — тест маски</title>
+  <style>
+    body{margin:0;background:#0b1220;color:#e6eef8;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px}
+    #app{width:900px;max-width:96%}
+    #loading{margin:8px 0;color:#cfe8ff}
+    #controls{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    button{padding:8px 12px;border-radius:8px;border:none;background:#2b6cff;color:#fff;cursor:pointer}
+    #log{margin-top:10px;background:#071022;padding:10px;border-radius:8px;color:#cfe8ff;white-space:pre-wrap;max-height:180px;overflow:auto}
+    a-scene{width:100%;height:560px;display:block}
+  </style>
+  <!-- A-Frame і MindAR (CDN) -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
 </head>
 <body>
-  <div id="card">
-    <h3>Тест камери і маски</h3>
-    <div>
-      <video id="video" playsinline></video>
-      <canvas id="canvas"></canvas>
+  <div id="app">
+    <h3>MindAR Face — тест сірої маски</h3>
+    <div id="loading">Натисни «Запустити AR», щоб дозволити камеру і стартувати маску.</div>
+
+    <div id="controls">
+      <button id="startBtn">Запустити AR</button>
+      <button id="stopBtn" disabled>Зупинити AR</button>
+      <div style="margin-left:auto;color:#9aa6c0">Працює на HTTPS або localhost</div>
     </div>
-    <div class="controls">
-      <button id="start">Запустити камеру</button>
-      <button id="stop">Зупинити</button>
-      <label>Колір <input id="color" type="color" value="#ff66aa"></label>
-      <label>Альфа <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.6"></label>
-    </div>
+
+    <!-- Сцена MindAR Face -->
+    <a-scene
+      id="scene"
+      mindar-face
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      style="background: #000;">
+      
+      <!-- Камера (неактивна, MindAR керує камерою) -->
+      <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Ціль: anchorIndex: 1 (маска на обличчі) -->
+      <a-entity mindar-face-target="anchorIndex: 1">
+        <a-entity
+          mindar-face-mesh
+          material="color: #808080; opacity: 0.7; transparent: true; side:double">
+        </a-entity>
+      </a-entity>
+
+    </a-scene>
+
     <div id="log">Логи зʼявляться тут</div>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-
 <script>
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const startBtn = document.getElementById('start');
-const stopBtn = document.getElementById('stop');
-const logEl = document.getElementById('log');
-const colorInput = document.getElementById('color');
-const alphaInput = document.getElementById('alpha');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const logEl = document.getElementById('log');
+  const sceneEl = document.querySelector('#scene');
 
-function log(msg, isError=false){
-  const time = new Date().toLocaleTimeString();
-  logEl.textContent = `[${time}] ${msg}\n` + logEl.textContent;
-  if(isError) logEl.classList.add('error'); else logEl.classList.remove('error');
-}
-
-// Простий маскувальний рендер без складної обробки для перевірки
-function drawMaskOnFrame(image){
-  const w = image.width, h = image.height;
-  if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
-  ctx.clearRect(0,0,w,h);
-  ctx.drawImage(image,0,0,w,h);
-  // простий еліпс по центру як тестова маска
-  ctx.save();
-  ctx.globalAlpha = parseFloat(alphaInput.value);
-  ctx.fillStyle = colorInput.value;
-  ctx.beginPath();
-  ctx.ellipse(w/2, h/2, w*0.35, h*0.45, 0, 0, Math.PI*2);
-  ctx.fill();
-  ctx.restore();
-}
-
-// Ініціалізація FaceMesh
-const faceMesh = new FaceMesh.FaceMesh({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
-faceMesh.setOptions({maxNumFaces:1, refineLandmarks:false, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
-faceMesh.onResults((res)=>{
-  if (!res || !res.image) return;
-  drawMaskOnFrame(res.image);
-  if (!res.multiFaceLandmarks || res.multiFaceLandmarks.length===0){
-    log('Обличчя не знайдено');
-  } else {
-    log('Обличчя знайдено — маска застосована');
+  function log(msg, isError=false){
+    const time = new Date().toLocaleTimeString();
+    const line = `[${time}] ${msg}\n`;
+    logEl.textContent = line + logEl.textContent;
+    if (isError) logEl.style.color = '#ffb3b3';
   }
-});
 
-let camera = null;
-
-async function startCamera(){
-  log('Запит доступу до камери...');
-  try {
-    camera = new Camera.Camera(video, {
-      onFrame: async () => { await faceMesh.send({image: video}); },
-      width: 1280, height: 720
-    });
-    await camera.start();
-    log('Камера запущена');
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    video.style.display = 'block';
-  } catch (err) {
-    log('Помилка при запуску камери: ' + (err && err.message ? err.message : err), true);
-    console.error(err);
-    // детальніша класифікація помилок
-    if (err.name === 'NotAllowedError' || err.name === 'SecurityError') log('Дозвіл на камеру відхилено. Дозволь камеру в налаштуваннях сайту.', true);
-    if (err.name === 'NotFoundError') log('Камера не знайдена. Перевір підключення пристрою.', true);
-    if (err.name === 'OverconstrainedError') log('Параметри камери не задовольняються. Спробуй інший пристрій або роздільність.', true);
-    if (err.name === 'NotReadableError') log('Камера зайнята іншим додатком. Закрий інші програми.', true);
-  }
-}
-
-function stopCamera(){
-  try {
-    if (camera && camera.stop) camera.stop();
-    if (video.srcObject){
-      video.srcObject.getTracks().forEach(t => t.stop());
-      video.srcObject = null;
+  // Безпечний виклик start/stop для MindAR
+  async function startMindAR(){
+    try {
+      log('Спроба запустити MindAR і отримати доступ до камери...');
+      // mindar-face компонент додається як компонент сцени
+      const mindarComp = sceneEl.components['mindar-face'];
+      if (!mindarComp){
+        log('Компонент mindar-face не знайдено на сцені. Перевір підключення скриптів.', true);
+        return;
+      }
+      // start() повертає проміс
+      await mindarComp.start();
+      log('MindAR запущено — камера активна.');
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      log('Помилка при старті MindAR: ' + (err && err.message ? err.message : err), true);
+      // детальні підказки
+      if (err.name === 'NotAllowedError') log('Дозвіл на камеру відхилено. Дозволь камеру в налаштуваннях сайту.', true);
+      if (err.name === 'NotFoundError') log('Камера не знайдена. Перевір підключення пристрою.', true);
     }
-  } catch(e){ console.warn(e); }
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  log('Камера зупинена');
-}
+  }
 
-startBtn.addEventListener('click', startCamera);
-stopBtn.addEventListener('click', stopCamera);
+  async function stopMindAR(){
+    try {
+      const mindarComp = sceneEl.components['mindar-face'];
+      if (mindarComp) await mindarComp.stop();
+      log('MindAR зупинено.');
+    } catch (err) {
+      console.error(err);
+      log('Помилка при зупинці MindAR: ' + (err && err.message ? err.message : err), true);
+    } finally {
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+  }
 
-// Автостарт з обробкою помилок (може бути заблоковано браузером)
-window.addEventListener('load', async () => {
-  try { await startCamera(); } catch(e){ log('Автостарт не вдався — натисни Запустити камеру', true); }
-});
+  startBtn.addEventListener('click', async () => {
+    // user gesture — необхідний для дозволу камери в багатьох браузерах
+    await startMindAR();
+  });
+  stopBtn.addEventListener('click', async () => {
+    await stopMindAR();
+  });
+
+  // Ловимо помилки A-Frame / MindAR
+  window.addEventListener('error', (e) => {
+    log('Глобальна помилка: ' + e.message, true);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    log('Unhandled rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), true);
+  });
+
+  // Додатково: лог подій сцени
+  sceneEl.addEventListener('loaded', () => log('A-Frame сцена завантажена.'));
+  sceneEl.addEventListener('renderstart', () => log('A-Frame рендер стартував.'));
+  sceneEl.addEventListener('arReady', () => log('AR готовий (arReady).'));
+  sceneEl.addEventListener('arError', (ev) => log('AR помилка: ' + JSON.stringify(ev.detail), true));
 </script>
 </body>
 </html>
