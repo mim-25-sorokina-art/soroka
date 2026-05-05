@@ -1,46 +1,54 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Force Front Camera & Mesh</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; }
-        /* Додаємо стиль, щоб відео не дзеркалилося неправильно */
-        video { transform: scaleX(-1); } 
-    </style>
-</head>
-<body>
-    <!-- Додаємо параметр faceScanningPlaceholder: false, щоб прибрати зайві заставки -->
-    <a-scene mindar-face="uiScanning: #example-scanning-overlay; faceMesh: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindAR Face Mask</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <!-- MindAR Face Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
+  </head>
+
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene
+      mindar-face="autoStart: true"
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets></a-assets>
+
+      <!-- Камера -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Маска: face mesh -->
+      <a-entity mindar-face-target="anchorIndex: 168">
         
-        <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
+        <!-- Сітка обличчя -->
+        <a-entity
+          mindar-face-occluder
+          geometry="primitive: face-mesh"
+          material="color: #00ffcc; wireframe: true; opacity: 0.7"
+          scale="1 1 1"
+        ></a-entity>
 
-        <!-- Основна сітка обличчя -->
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <!-- Використовуємо стандартний колір сітки для кращої видимості -->
-            <a-entity mindar-face-mesh material="wireframe: true; color: #ff0000; opacity: 0.8"></a-entity>
-        </a-entity>
+        <!-- Додатковий ефект: світна точка на носі -->
+        <a-sphere
+          position="0 0.05 0.1"
+          radius="0.03"
+          material="color: #ff0000; emissive: #ff0000; emissiveIntensity: 1"
+        ></a-sphere>
 
-        <!-- Сфери на очах -->
-        <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="white" radius="0.02"></a-sphere>
-        </a-entity>
-        <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="white" radius="0.02"></a-sphere>
-        </a-entity>
+      </a-entity>
+
+      <!-- Освітлення -->
+      <a-light type="ambient" intensity="0.8"></a-light>
+      <a-light type="directional" position="0 1 1" intensity="0.6"></a-light>
     </a-scene>
-
-    <script>
-        // Скрипт для примусового перемикання на фронтальну камеру
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-            .then(function(stream) {
-                console.log("Front camera active");
-            })
-            .catch(function(err) {
-                console.log("Error: " + err);
-            });
-    </script>
-</body>
+  </body>
 </html>
