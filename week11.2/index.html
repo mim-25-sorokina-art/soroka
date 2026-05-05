@@ -2,24 +2,29 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 11.2 - Face Mesh Final</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
+    <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+        
         <a-camera active="false" position="0 0 0"></a-camera>
 
+        <!-- Ця сутність створює саме сітку обличчя -->
         <a-entity mindar-face-target="anchorIndex: 168">
-            <!-- Тільки сітка, без жодних додаткових моделей -->
-            <a-entity mindar-face-mesh material="wireframe: true; color: #888888"></a-entity>
+            <a-entity mindar-face-mesh material="wireframe: true; color: #444444"></a-entity>
         </a-entity>
 
+        <!-- Білі точки на очах -->
         <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="white" radius="0.02"></a-sphere>
+            <a-sphere color="#ffffff" radius="0.02"></a-sphere>
         </a-entity>
         <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="white" radius="0.02"></a-sphere>
+            <a-sphere color="#ffffff" radius="0.02"></a-sphere>
         </a-entity>
+
     </a-scene>
 </body>
 </html>
