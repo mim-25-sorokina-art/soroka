@@ -2,22 +2,30 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Face Mesh Final</title>
+    <title>Week 11.2 - Face Mesh Video Version</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
     <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        
+        <a-assets>
+            <!-- Модель голови, яка створює об'єм -->
+            <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-head-occluder.glb"></a-asset-item>
+        </a-assets>
+
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- Ця сутність створює саме сітку обличчя -->
+        <!-- Основний об'єкт відстеження -->
         <a-entity mindar-face-target="anchorIndex: 168">
-            <a-entity mindar-face-mesh material="wireframe: true; color: #444444"></a-entity>
+            <!-- Сама сітка обличчя (mesh) -->
+            <a-entity mindar-face-mesh material="wireframe: true; color: #888888"></a-entity>
+            
+            <!-- Оклюдер (ховає сітку за носом/щоками, як у 3D) -->
+            <a-gltf-model src="#headModel" class="mindar-face-occluder"></a-gltf-model>
         </a-entity>
 
-        <!-- Білі точки на очах -->
+        <!-- Сфери на очах (як у відео) -->
         <a-entity mindar-face-target="anchorIndex: 374">
             <a-sphere color="#ffffff" radius="0.02"></a-sphere>
         </a-entity>
