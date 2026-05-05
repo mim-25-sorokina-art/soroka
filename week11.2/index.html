@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Final Test</title>
+    <title>Тиждень 11 — AR Маска (Face Mesh)</title>
+    <!-- Підключення основних бібліотек A-Frame та MindAR -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
-    <style>body { margin: 0; overflow: hidden; }</style>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-face-aframe.prod.js"></script>
+    
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
 </head>
 <body>
-    <a-scene mindar-face="faceMesh: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <!-- Налаштування сцени MindAR для відстеження обличчя -->
+    <a-scene 
+        mindar-face="filterMinCF: 0.0001; filterBeta: 0.001" 
+        embedded 
+        color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <!-- Оскільки нам потрібна просто сіра сітка, зовнішні файли тут не потрібні, 
+                 але ви можете залишити цей блок для майбутніх текстур -->
+        </a-assets>
+
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <a-entity mindar-face-target="anchorIndex: 168">
-            <!-- Колір змінено на зелений для перевірки, wireframe увімкнено -->
-            <a-entity mindar-face-mesh material="wireframe: true; color: #00ff00"></a-entity>
+        <!-- Головний об'єкт, який прив'язується до обличчя -->
+        <a-entity mindar-face-target="anchorIndex: 1">
+            <!-- Створення самої сірої маски (Face Mesh) -->
+            <!-- color: #808080 - це сірий колір -->
+            <!-- opacity: 0.6 - робить її трохи прозорою -->
+            <a-entity 
+                mindar-face-mesh 
+                material="color: #808080; opacity: 0.6; transparent: true; wireframe: false">
+            </a-entity>
         </a-entity>
 
-        <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="white" radius="0.01"></a-sphere>
-        </a-entity>
-        <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="white" radius="0.01"></a-sphere>
-        </a-entity>
     </a-scene>
 </body>
 </html>
