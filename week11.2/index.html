@@ -2,34 +2,45 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Face Mesh</title>
+    <title>Тиждень 11 - Обличчя як маркер</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
+    <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
-            <!-- Завантажуємо модель оклюдера для створення ефекту сітки -->
+            <!-- Ваша маска -->
+            <img id="maskTexture" src="./pngwing.com.png">
+            <!-- 3D модель голови для оклюзії (щоб маска була об'ємною) -->
             <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-head-occluder.glb"></a-asset-item>
         </a-assets>
 
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <!-- Відображення сітки обличчя -->
+        <!-- 1. СТВОРЮЄМО СІТКУ ОБЛИЧЧЯ (як на скриншоті завдання) -->
         <a-entity mindar-face-target="anchorIndex: 168">
-            <a-gltf-model src="#headModel" class="mindar-face-occluder"></a-gltf-model>
-            
-            <!-- Додаємо видиму сітку (wireframe) -->
-            <a-entity mindar-face-mesh material="wireframe: true; color: #888888"></a-entity>
+            <a-gltf-model mindar-face-occluder src="#headModel"></a-gltf-model>
         </a-entity>
-        
-        <!-- Крапки на очах для ідентичності зі зразком -->
+
+        <!-- 2. НАКЛАДАЄМО ВАШУ МАСКУ -->
+        <a-entity mindar-face-target="anchorIndex: 168">
+            <a-image src="#maskTexture" 
+                     width="1.0" height="0.7" 
+                     position="0 0 0.06" 
+                     transparent="true"
+                     alpha-test="0.5">
+            </a-image>
+        </a-entity>
+
+        <!-- 3. ДОДАЄМО ЕФЕКТИ ОЧЕЙ (як на зразку) -->
         <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="white" radius="0.015"></a-sphere>
+            <a-sphere color="#ffffff" radius="0.02" opacity="0.8"></a-sphere>
         </a-entity>
         <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="white" radius="0.015"></a-sphere>
+            <a-sphere color="#ffffff" radius="0.02" opacity="0.8"></a-sphere>
         </a-entity>
+
     </a-scene>
 </body>
 </html>
