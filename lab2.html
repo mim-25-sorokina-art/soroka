@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8"> <!-- -->
-    <title>Лабораторна 2 — Сорокіна</title>
+    <meta charset="UTF-8"> <!-- Обов'язково для прізвища Сорокіна -->
+    <title>Лабораторна 2 — Сорокіна Єлизавета</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 </head>
 <body>
-    <a-scene stats> <!-- -->
-        
+    <a-scene stats>
         <a-assets>
-            <!-- п. 6: Завантаження текстури (назва точно як на скріншоті) -->
+            <!-- Шлях згідно з вашим скріншотом: images/texture.jpg -->
             <img id="myTexture" src="images/texture.jpg">
-            <!-- п. 6: Завантаження моделі (перевірте, щоб файл був у images/models/) -->
+            <!-- Шлях згідно з вашим скріншотом: images/models/ та назва вашої моделі -->
             <a-asset-item id="owlModel" src="images/models/owl.glb"></a-asset-item>
         </a-assets>
 
-        <!-- п. 3.2.2: Прізвище. font вказує на ваш json файл -->
+        <!-- Прізвище українською (п. 3.2.2 посібника) -->
         <a-text 
             value="Сорокіна Єлизавета" 
             font="fonts/ukr-msdf.json" 
@@ -25,37 +24,37 @@
             position="-2 3 -5">
         </a-text>
 
-        <!-- КУЛЯ: Виправлено освітлення та анімацію обертання -->
+        <!-- КУЛЯ:src вказує на текстуру, додано анімацію обертання (п. 4.3.2) -->
         <a-sphere 
             position="-2 1.25 -5" 
             radius="1.25" 
             src="#myTexture"
-            animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear"> <!-- -->
+            animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear">
         </a-sphere>
 
-        <!-- ЦИЛІНДР: Анімація кольору -->
+        <!-- ЦИЛІНДР: анімація зміни кольору (п. 4.3.1) -->
         <a-cylinder 
             position="2 1 -5" 
             radius="0.5" 
             height="1.5" 
             color="#00BFFF"
-            animation="property: material.color; from: #00BFFF; to: #FF00FF; dur: 4000; loop: true; dir: alternate"> <!-- -->
+            animation="property: material.color; from: #00BFFF; to: #FFD700; dur: 4000; loop: true; dir: alternate">
         </a-cylinder>
 
-        <!-- п. 5.3: 3D-модель -->
+        <!-- 3D-МОДЕЛЬ: шлях виправлено на images/models/ (п. 5.3) -->
         <a-entity 
             gltf-model="#owlModel" 
             position="0 0.5 -7" 
             scale="1 1 1">
         </a-entity>
 
-        <!-- СВІТЛО: Цей блок зробить кулю кольоровою, а не чорною -->
-        <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
-        <a-light type="directional" position="1 2 1" intensity="0.5"></a-light>
+        <!-- СВІТЛО: Цей блок ПРИМУСОВО робить об'єкти кольоровими (п. 6) -->
+        <a-light type="ambient" color="#ffffff" intensity="1.0"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
 
+        <!-- Оточення -->
         <a-sky color="#87CEEB"></a-sky>
         <a-plane position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
-        
     </a-scene>
 </body>
 </html>
