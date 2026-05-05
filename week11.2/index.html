@@ -3,43 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тиждень 11 — AR Маска (Face Mesh)</title>
-    <!-- Підключення основних бібліотек A-Frame та MindAR -->
+    <title>Week 11 - Final Face Mesh</title>
+    <!-- Використовуємо перевірені версії -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-face-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
     
     <style>
         body { margin: 0; overflow: hidden; }
+        /* Додамо індикатор завантаження */
+        #scanning-overlay {
+            display: flex; align-items: center; justify-content: center;
+            position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); color: white; z-index: 2;
+            font-family: sans-serif;
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- Налаштування сцени MindAR для відстеження обличчя -->
+    <div id="scanning-overlay">Завантаження ШІ-моделі... зачекайте 10 сек.</div>
+
     <a-scene 
-        mindar-face="filterMinCF: 0.0001; filterBeta: 0.001" 
+        mindar-face 
         embedded 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights" 
         vr-mode-ui="enabled: false" 
         device-orientation-permission-ui="enabled: false">
         
-        <a-assets>
-            <!-- Оскільки нам потрібна просто сіра сітка, зовнішні файли тут не потрібні, 
-                 але ви можете залишити цей блок для майбутніх текстур -->
-        </a-assets>
+        <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <a-camera active="false" position="0 0 0"></a-camera>
-
-        <!-- Головний об'єкт, який прив'язується до обличчя -->
+        <!-- Цей компонент автоматично малює сіру сітку на все обличчя -->
         <a-entity mindar-face-target="anchorIndex: 1">
-            <!-- Створення самої сірої маски (Face Mesh) -->
-            <!-- color: #808080 - це сірий колір -->
-            <!-- opacity: 0.6 - робить її трохи прозорою -->
-            <a-entity 
-                mindar-face-mesh 
-                material="color: #808080; opacity: 0.6; transparent: true; wireframe: false">
-            </a-entity>
+            <a-entity mindar-face-mesh material="color: #808080; opacity: 0.7; transparent: true"></a-entity>
         </a-entity>
-
     </a-scene>
+
+    <script>
+        // Приховуємо напис, коли сцена готова
+        document.querySelector('a-scene').addEventListener("arReady", (event) => {
+           document.querySelector('#scanning-overlay').classList.add('hidden');
+        });
+    </script>
 </body>
 </html>
