@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11 - Face Mask</title>
+    <title>Week 11 - Mask on Face</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
     <style>body { margin: 0; overflow: hidden; }</style>
@@ -10,16 +10,16 @@
 <body>
     <a-scene mindar-face vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
-            <!-- ТУТ Я ВПИСАВ ВАШУ НАЗВУ ФАЙЛУ -->
             <img id="maskTexture" src="./pngwing.com.png">
         </a-assets>
 
         <a-camera active="false" position="0 0 0"></a-camera>
 
-        <a-entity mindar-face-target="anchorIndex: 10">
+        <!-- Змінюємо 10 на 168 (перенісся) -->
+        <a-entity mindar-face-target="anchorIndex: 168">
             <a-image src="#maskTexture" 
-                     width="0.6" height="0.6" 
-                     position="0 0.2 0.1" 
+                     width="0.9" height="0.6" 
+                     position="0 0 0.05" 
                      transparent="true"
                      alpha-test="0.5">
             </a-image>
