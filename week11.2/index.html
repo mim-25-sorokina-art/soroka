@@ -1,50 +1,159 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Grey Face Mesh</title>
-    <!-- Використовуємо стабільну комбінацію бібліотек -->
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
-    
-    <style>
-        body { margin: 0; overflow: hidden; }
-        /* Повідомлення для користувача, поки вантажиться ШІ */
-        #loading-text {
-            position: absolute; width: 100%; top: 50%; text-align: center;
-            color: white; font-family: Arial, sans-serif; z-index: 999;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Накладання маски — MediaPipe Face Mesh</title>
+  <style>
+    html,body { height:100%; margin:0; background:#111; color:#eee; font-family:Arial,Helvetica,sans-serif; }
+    .wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:12px; }
+    #container { position:relative; width:720px; max-width:95%; }
+    video#input_video { display:none; }
+    canvas#output_canvas { width:100%; height:auto; border-radius:8px; background:#222; display:block; }
+    .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    label { font-size:14px; }
+    input[type=color], input[type=range] { cursor:pointer; }
+    .hint { font-size:13px; color:#bbb; margin-top:6px; }
+  </style>
 </head>
 <body>
-    <div id="loading-text">Зачекайте, ШІ малює сітку...</div>
+  <div class="wrap">
+    <h3>Накладання маски на обличчя (MediaPipe Face Mesh)</h3>
+    <div id="container">
+      <video id="input_video" playsinline></video>
+      <canvas id="output_canvas"></canvas>
+    </div>
 
-    <a-scene 
-        mindar-face 
-        embedded 
-        color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
-        vr-mode-ui="enabled: false" 
-        device-orientation-permission-ui="enabled: false">
-        
-        <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
+    <div class="controls">
+      <label>Колір маски: <input id="maskColor" type="color" value="#ff66aa"></label>
+      <label>Непрозорість: <input id="alpha" type="range" min="0" max="1" step="0.01" value="0.6"></label>
+      <label>Розмиття: <input id="blur" type="range" min="0" max="30" step="1" value="12"></label>
+      <button id="toggleCam">Почати / Зупинити</button>
+    </div>
+    <div class="hint">Поверни голову повільно, перевір освітлення. ESC або кнопка зупинить камеру.</div>
+  </div>
 
-        <!-- Цей блок відповідає за ТУ САМУ сіру маску -->
-        <a-entity mindar-face-target="anchorIndex: 1">
-            <a-entity 
-                mindar-face-mesh 
-                material="color: #808080; opacity: 0.6; transparent: true; wireframe: false">
-            </a-entity>
-        </a-entity>
+  <!-- MediaPipe Face Mesh (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
-    </a-scene>
+  <script>
+  // Налаштування елементів
+  const videoElement = document.getElementById('input_video');
+  const canvasElement = document.getElementById('output_canvas');
+  const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
 
-    <script>
-        // Коли система AR готова, прибираємо напис
-        document.querySelector('a-scene').addEventListener("arReady", (event) => {
-           document.querySelector('#loading-text').style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+  const maskColorInput = document.getElementById('maskColor');
+  const alphaInput = document.getElementById('alpha');
+  const blurInput = document.getElementById('blur');
+  const toggleBtn = document.getElementById('toggleCam');
+
+  let camera = null;
+  let running = false;
+
+  // Індекси контуру обличчя (oval) з MediaPipe Face Mesh
+  // Це приклад набору індексів, які описують загальний контур обличчя
+  const FACE_OVAL = [
+    10, 338, 297, 332, 284, 251, 389, 356, 454, 323,
+    361, 288, 397, 365, 379, 378, 400, 377, 152, 148,
+    176, 149, 150, 136, 172, 58, 132, 93, 234, 127,
+    162, 21, 54, 103, 67, 109
+  ];
+
+  // Зберігаємо попередні точки для простого згладжування
+  let prevPoints = null;
+  const SMOOTHING = 0.6; // 0..1 (0 - без згладжування, 1 - повна інерція)
+
+  // Ініціалізація розмірів canvas відповідно до відео
+  function resizeCanvasToVideo() {
+    const vw = videoElement.videoWidth;
+    const vh = videoElement.videoHeight;
+    if (!vw || !vh) return;
+    canvasElement.width = vw;
+    canvasElement.height = vh;
+  }
+
+  // Лінійна інтерполяція для згладжування
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  // Обробка результатів FaceMesh
+  function onResults(results) {
+    if (!results || !results.multiFaceLandmarks) {
+      // очистити кадр
+      ctx.clearRect(0,0,canvasElement.width, canvasElement.height);
+      return;
+    }
+
+    resizeCanvasToVideo();
+    // малюємо відео як фон
+    ctx.save();
+    ctx.clearRect(0,0,canvasElement.width, canvasElement.height);
+    ctx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+    // беремо перше обличчя
+    const landmarks = results.multiFaceLandmarks[0];
+    // конвертуємо в масив точок (x,y) у пікселях
+    const pts = FACE_OVAL.map(i => {
+      const lm = landmarks[i];
+      return { x: lm.x * canvasElement.width, y: lm.y * canvasElement.height };
+    });
+
+    // ініціалізація prevPoints
+    if (!prevPoints || prevPoints.length !== pts.length) {
+      prevPoints = pts.map(p => ({ x: p.x, y: p.y }));
+    }
+
+    // згладжування: нові = lerp(prev, current, 1 - SMOOTHING)
+    const smoothPts = pts.map((p, idx) => {
+      const px = lerp(prevPoints[idx].x, p.x, 1 - SMOOTHING);
+      const py = lerp(prevPoints[idx].y, p.y, 1 - SMOOTHING);
+      prevPoints[idx].x = px;
+      prevPoints[idx].y = py;
+      return { x: px, y: py };
+    });
+
+    // Малюємо маску на offscreen canvas, щоб застосувати розмиття
+    const off = document.createElement('canvas');
+    off.width = canvasElement.width;
+    off.height = canvasElement.height;
+    const offCtx = off.getContext('2d');
+
+    // Заповнюємо полігон
+    offCtx.fillStyle = '#fff';
+    offCtx.beginPath();
+    smoothPts.forEach((p, i) => {
+      if (i === 0) offCtx.moveTo(p.x, p.y);
+      else offCtx.lineTo(p.x, p.y);
+    });
+    offCtx.closePath();
+    offCtx.fill();
+
+    // Розмиття: використовуємо CSS-like filter (підтримка сучасних браузерів)
+    const blurPx = parseInt(blurInput.value, 10) || 0;
+    if (blurPx > 0) {
+      offCtx.filter = `blur(${blurPx}px)`;
+      // перезаписати розмиту маску в інший offscreen для коректного застосування
+      const off2 = document.createElement('canvas');
+      off2.width = off.width;
+      off2.height = off.height;
+      const off2Ctx = off2.getContext('2d');
+      off2Ctx.filter = `blur(${blurPx}px)`;
+      off2Ctx.drawImage(off, 0, 0);
+      // замінюємо off на off2
+      offCtx.clearRect(0,0,off.width,off.height);
+      offCtx.drawImage(off2, 0, 0);
+    }
+
+    // Тепер накладаємо кольорову заливку з альфою
+    const maskColor = maskColorInput.value || '#ff66aa';
+    const alpha = parseFloat(alphaInput.value) || 0.6;
+
+    // Створюємо кольоровий шар
+    const colorLayer = document.createElement('canvas');
+    colorLayer.width = off.width;
+    colorLayer.height = off.height;
+    const colorCtx = colorLayer.getContext('2d');
+    colorCtx.fillStyle = maskColor;
+    colorCtx.fillRect(0,0,colorLayer.width,colorLayer.height);
+
+    // Використовуємо маску як альфа: малюємо маску
