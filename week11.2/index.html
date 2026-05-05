@@ -2,30 +2,45 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 11.2 - Final Fix</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-face-aframe.prod.js"></script>
-    <style>body { margin: 0; overflow: hidden; }</style>
+    <title>Week 11.2 - Force Front Camera & Mesh</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-face-aframe.prod.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        /* Додаємо стиль, щоб відео не дзеркалилося неправильно */
+        video { transform: scaleX(-1); } 
+    </style>
 </head>
 <body>
-    <!-- Додано filterMinCF та filterBeta для стабільності, а також автоматичне налаштування камери -->
-    <a-scene mindar-face="filterMinCF:0.001; filterBeta: 10" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <!-- Додаємо параметр faceScanningPlaceholder: false, щоб прибрати зайві заставки -->
+    <a-scene mindar-face="uiScanning: #example-scanning-overlay; faceMesh: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
         <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Сутність для сітки -->
+        <!-- Основна сітка обличчя -->
         <a-entity mindar-face-target="anchorIndex: 168">
-            <a-entity mindar-face-mesh material="wireframe: true; color: #444444"></a-entity>
+            <!-- Використовуємо стандартний колір сітки для кращої видимості -->
+            <a-entity mindar-face-mesh material="wireframe: true; color: #ff0000; opacity: 0.8"></a-entity>
         </a-entity>
 
-        <!-- Точки на очах -->
+        <!-- Сфери на очах -->
         <a-entity mindar-face-target="anchorIndex: 374">
-            <a-sphere color="white" radius="0.015"></a-sphere>
+            <a-sphere color="white" radius="0.02"></a-sphere>
         </a-entity>
         <a-entity mindar-face-target="anchorIndex: 145">
-            <a-sphere color="white" radius="0.015"></a-sphere>
+            <a-sphere color="white" radius="0.02"></a-sphere>
         </a-entity>
-
     </a-scene>
+
+    <script>
+        // Скрипт для примусового перемикання на фронтальну камеру
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+            .then(function(stream) {
+                console.log("Front camera active");
+            })
+            .catch(function(err) {
+                console.log("Error: " + err);
+            });
+    </script>
 </body>
 </html>
