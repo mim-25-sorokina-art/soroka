@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 3.0 - WebXR AR Collider</title>
+    <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+    </style>
+</head>
+<body>
+
+    <script type="module">
+        // Імпортуємо офіційний модуль ARButton прямо з CDN Three.js
+        import { ARButton } from 'https://unpkg.com/three@0.147.0/examples/jsm/webxr/ARButton.js';
+
+        let scene, camera, renderer;
+        let torus, pRed, pBlue;
+        const clock = new THREE.Clock();
+
+        init();
+
+        function init() {
+            // 1. Створення сцени
+            scene = new THREE.Scene();
+
+            // 2. Створення камери
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
+            // 3. Налаштування рендерера з підтримкою XR
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // ЦЕ ГОЛОВНИЙ УКЛАДАНЕЦЬ: вмикаємо підтримку WebXR
+            renderer.xr.enabled = true; 
+            document.body.appendChild(renderer.domElement);
+
+            // 4. Додавання кнопки «START AR» на екран
+            document.body.appendChild(ARButton.createButton(renderer));
+
+            // 5. Освітлення сцени
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+            light.position.set(0.5, 1, 0.25);
+            scene.add(light);
+
+            // 6. Створення групи для моделі колайдера, щоб посунути її вперед
+            const colliderGroup = new THREE.Group();
+
+            // Модель тора (зменшуємо масштаб для реального простору)
+            torus = new THREE.Mesh(
+                new THREE.TorusGeometry(0.3, 0.015, 16, 100),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 })
+            );
+            torus.rotation.x = Math.PI / 2; // Кладемо його горизонтально
+            colliderGroup.add(torus);
+
+            // Кульки-протони
+            const pGeom = new THREE.SphereGeometry(0.03, 32, 32);
+            pRed = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({ color: 0xff0000 }));
+            pBlue = new THREE.Mesh(pGeom, new THREE.MeshStandardMaterial({ color: 0x0000ff }));
+            colliderGroup.add(pRed, pBlue);
+
+            // Відсуваємо всю групу на 1.5 метри вперед від камери і трохи вниз
+            colliderGroup.position.set(0, -0.2, -1.5); 
+            scene.add(colliderGroup);
+
+            // 7. Головний цикл анімації (у WebXR використовується setAnimationLoop замість requestAnimationFrame)
+            renderer.setAnimationLoop(render);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function render() {
+            const t = clock.getElapsedTime() * 2;
+
+            // Рух кульок по колу радіусом 0.3 метри всередині тора
+            pRed.position.set(Math.cos(t) * 0.3, 0, Math.sin(t) * 0.3);
+            pBlue.position.set(Math.cos(-t) * 0.3, 0, Math.sin(-t) * 0.3);
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>
