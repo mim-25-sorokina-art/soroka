@@ -26,15 +26,13 @@
 <body>
 
     <a href="./index.html" class="back-btn">⬅️ На головну</a>
-    <div class="instruction-overlay">🎯 Наведіть камеру на маркер HIRO та клікніть на куб для розгортки!</div>
+    <div class="instruction-overlay">🎯 Наведіть камеру на маркер "А" та клікніть на куб для розгортки!</div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" cursor="rayOrigin: mouse" raycaster="objects: .clickable">
         
-        <a-camera gps-camera rotation-reader>
-            <a-cursor id="cursor" raycaster="objects: .clickable"></a-cursor>
-        </a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <a-marker preset="hiro">
+        <a-marker type="pattern" url="./assets/markers/letter-a.patt">
             
             <a-entity id="interactive-cube" position="0 0.5 0" rotation="20 45 0" scale="1.5 1.5 1.5">
                 <a-plane id="face-front" position="0 0 0.25" width="0.5" height="0.5" material="color: #4CC3D9; side: double; opacity: 0.8;" class="clickable" interactive-fold></a-plane>
@@ -54,7 +52,7 @@
     </a-scene>
 
     <script>
-        // Компонент плавної анімації розгортки
+        // Скрипт анімації розгортки
         AFRAME.registerComponent('interactive-fold', {
             init: function () {
                 let el = this.el;
@@ -67,6 +65,7 @@
                 let fLeft = document.querySelector('#face-left');
                 let fRight = document.querySelector('#face-right');
 
+                // Слухаємо клік (працюватиме і на ПК мишкою, і на телефоні тапом)
                 el.addEventListener('click', function () {
                     if (isFolded) {
                         fFront.setAttribute('animation', 'property: position; to: 0 -0.5 0; dur: 800; easing: easeOutQuad');
