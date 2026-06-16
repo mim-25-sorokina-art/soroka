@@ -39,11 +39,83 @@
                 <a-plane id="face-front" position="0 0 0.25" width="0.5" height="0.5" material="color: #4CC3D9; side: double; opacity: 0.85;" class="clickable"></a-plane>
                 <a-plane id="face-back" position="0 0 -0.25" rotation="0 180 0" width="0.5" height="0.5" material="color: #4CC3D9; side: double; opacity: 0.85;" class="clickable"></a-plane>
                 <a-plane id="face-top" position="0 0.25 0" rotation="-90 0 0" width="0.5" height="0.5" material="color: #FFC65D; side: double; opacity: 0.85;" class="clickable"></a-plane>
-                <a-plane id="face-bottom" position="0 -0.25 0" rotation="90 0 0" width="0.5" height="0.5" material="color: #FFC65D; side: double; opacity: 0.85;" class="clickable"></a-bottom>
+                <a-plane id="face-bottom" position="0 -0.25 0" rotation="90 0 0" width="0.5" height="0.5" material="color: #FFC65D; side: double; opacity: 0.85;" class="clickable"></a-plane>
                 <a-plane id="face-left" position="-0.25 0 0" rotation="0 -90 0" width="0.5" height="0.5" material="color: #7BCFA6; side: double; opacity: 0.85;" class="clickable"></a-plane>
                 <a-plane id="face-right" position="0.25 0 0" rotation="0 90 0" width="0.5" height="0.5" material="color: #7BCFA6; side: double; opacity: 0.85;" class="clickable"></a-plane>
             
             </a-entity>
 
             <a-entity position="0 0.1 0.8" rotation="-90 0 0">
-                <a-plane width="1.2" height="0.4" material="
+                <a-plane width="1.2" height="0.4" material="color: #111; opacity: 0.8;"></a-plane>
+                <a-text value="V = a * a * a\nS = 6 * a * a" color="#FFF" align="center" position="0 0 0.01" scale="0.5 0.5 0.5"></a-text>
+            </a-entity>
+
+        </a-marker>
+    </a-scene>
+
+    <script>
+        let isFolded = true;
+
+        // Знаходимо всі грані куба в коді
+        const fFront = document.querySelector('#face-front');
+        const fBack = document.querySelector('#face-back');
+        const fTop = document.querySelector('#face-top');
+        const fBottom = document.querySelector('#face-bottom');
+        const fLeft = document.querySelector('#face-left');
+        const fRight = document.querySelector('#face-right');
+
+        // Знаходимо всі елементи з класом clickable
+        const clickableFaces = document.querySelectorAll('.clickable');
+        
+        // Вішаємо прослуховувач кліків на КОЖНУ грань куба
+        clickableFaces.forEach(face => {
+            face.addEventListener('click', function (evt) {
+                // Зупиняємо розповсюдження події, щоб не було глюків і подвійних спрацьовувань
+                evt.stopPropagation();
+                
+                if (isFolded) {
+                    // Плавна анімація розгортання куба в пласку фігуру (розгортку)
+                    fFront.setAttribute('animation', 'property: position; to: 0 -0.5 0; dur: 700; easing: easeOutBack');
+                    fFront.setAttribute('animation__rot', 'property: rotation; to: 90 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fBack.setAttribute('animation', 'property: position; to: 0 0.5 0; dur: 700; easing: easeOutBack');
+                    fBack.setAttribute('animation__rot', 'property: rotation; to: -90 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fLeft.setAttribute('animation', 'property: position; to: -0.5 0 0; dur: 700; easing: easeOutBack');
+                    fLeft.setAttribute('animation__rot', 'property: rotation; to: 0 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fRight.setAttribute('animation', 'property: position; to: 0.5 0 0; dur: 700; easing: easeOutBack');
+                    fRight.setAttribute('animation__rot', 'property: rotation; to: 0 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fTop.setAttribute('animation', 'property: position; to: 0 0 0; dur: 700; easing: easeOutBack');
+                    fTop.setAttribute('animation__rot', 'property: rotation; to: 0 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fBottom.setAttribute('animation', 'property: position; to: 0 -1.0 0; dur: 700; easing: easeOutBack');
+                    fBottom.setAttribute('animation__rot', 'property: rotation; to: 90 0 0; dur: 700; easing: easeOutBack');
+                    isFolded = false;
+                } else {
+                    // Анімація згортання граней назад у суцільний 3D куб
+                    fFront.setAttribute('animation', 'property: position; to: 0 0 0.25; dur: 700; easing: easeOutBack');
+                    fFront.setAttribute('animation__rot', 'property: rotation; to: 0 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fBack.setAttribute('animation', 'property: position; to: 0 0 -0.25; dur: 700; easing: easeOutBack');
+                    fBack.setAttribute('animation__rot', 'property: rotation; to: 0 180 0; dur: 700; easing: easeOutBack');
+                    
+                    fLeft.setAttribute('animation', 'property: position; to: -0.25 0 0; dur: 700; easing: easeOutBack');
+                    fLeft.setAttribute('animation__rot', 'property: rotation; to: 0 -90 0; dur: 700; easing: easeOutBack');
+                    
+                    fRight.setAttribute('animation', 'property: position; to: 0.25 0 0; dur: 700; easing: easeOutBack');
+                    fRight.setAttribute('animation__rot', 'property: rotation; to: 0 90 0; dur: 700; easing: easeOutBack');
+                    
+                    fTop.setAttribute('animation', 'property: position; to: 0 0.25 0; dur: 700; easing: easeOutBack');
+                    fTop.setAttribute('animation__rot', 'property: rotation; to: -90 0 0; dur: 700; easing: easeOutBack');
+                    
+                    fBottom.setAttribute('animation', 'property: position; to: 0 -0.25 0; dur: 700; easing: easeOutBack');
+                    fBottom.setAttribute('animation__rot', 'property: rotation; to: 90 0 0; dur: 700; easing: easeOutBack');
+                    isFolded = true;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
